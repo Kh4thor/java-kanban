@@ -2,13 +2,13 @@ package test.java;
 
 import org.junit.jupiter.api.Test;
 
-import test.java.model.Task;
-import test.java.model.MainTask;
-import test.java.model.SubTask;
-import test.java.model.TaskProgress;
-import test.java.service.InMemoryHistoryManager;
-import test.java.service.InMemoryTaskManager;
-import test.java.utils.Node;
+import main.java.model.Task;
+import main.java.model.MainTask;
+import main.java.model.SubTask;
+import main.java.model.TaskProgress;
+import main.java.service.InMemoryHistoryManager;
+import main.java.service.InMemoryTaskManager;
+import main.java.utils.Node;
 
 import java.util.List;
 import java.util.Map;
