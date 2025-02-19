@@ -1,17 +1,17 @@
-package test.java;
+package test;
 
 import org.junit.jupiter.api.Test;
 
-import main.java.model.Task;
-import main.java.model.MainTask;
-import main.java.model.SubTask;
-import main.java.model.TaskProgress;
-import main.java.service.InMemoryHistoryManager;
-import main.java.service.InMemoryTaskManager;
-import main.java.utils.Node;
-
-import java.util.List;
 import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
+
+import main.java.model.Task;
+import main.java.model.SubTask;
+import main.java.model.MainTask;
+import main.java.model.TaskProgress;
+import main.java.service.InMemoryTaskManager;
+import main.java.service.InMemoryHistoryManager;
 
 import org.junit.jupiter.api.Assertions;
 
@@ -79,7 +79,7 @@ public class InMemoryHistoryManagerTEST {
 		tm.getSubTask(subtask2.getId());
 		tm.getSubTask(subtask3.getId());
 
-		List<Task> arr = tm.getTasks();
+		List<Task> arr = tm.getHistory();
 		Assertions.assertEquals(11, arr.size());
 	}
 
@@ -107,7 +107,7 @@ public class InMemoryHistoryManagerTEST {
 		tm.getSubTask(subtask1.getId());
 		tm.getSubTask(subtask2.getId());
 
-		List<Task> arr = tm.getTasks();
+		List<Task> arr = tm.getHistory();
 
 		Assertions.assertTrue(arr.size() == 6);
 	}
@@ -140,7 +140,7 @@ public class InMemoryHistoryManagerTEST {
 		tm.getSubTask(subtask1.getId());
 
 		// вывод параметов в прямом порядке
-		List<Task> arr = tm.getTasks();
+		List<Task> arr = tm.getHistory();
 
 		Assertions.assertTrue(arr.size() == 3);
 		Assertions.assertEquals(task1, arr.get(0));
@@ -148,35 +148,20 @@ public class InMemoryHistoryManagerTEST {
 		Assertions.assertEquals(subtask1, arr.get(2));
 
 		// вывод параметов в обратном порядке
-		arr = tm.getTasksReverse();
+		arr = tm.getHistoryReverse();
 
-		Assertions.assertTrue(arr.size() == 3);
+		// проверка листа на содержание задач в обратном порядке
+		Assertions.assertEquals(3, arr.size());
 		Assertions.assertEquals(task1, arr.get(2));
 		Assertions.assertEquals(maintask1, arr.get(1));
 		Assertions.assertEquals(subtask1, arr.get(0));
 	}
 
 	/*
-	 * удаление узла из связки
+	 * удаление задачи, главной задачи и подзадачи из истории и двусвязного списка
 	 */
 	@Test
-	void removeNode_nodeNotNull_succes() throws Exception {
-		Task task1 = new Task(1, "Task-1", "Discription", TaskProgress.NEW);
-		hm.addToHistory(task1);
-		int id = task1.getId();
-		Map<Integer, Node<Task>> nodeMap = hm.getHistory();
-		Node<Task> node = nodeMap.get(id);
-		System.out.println(node.data);
-
-		Assertions.assertEquals(task1, node.data);
-		Assertions.assertEquals(1, hm.remove(id));
-	}
-
-	/*
-	 * удаление всех подзадач главной задачи после ее удаления
-	 */
-	@Test
-	void removeNode_deleteSubtasksWhenMainTaskDeleted_succes() throws Exception {
+	void remove_deleteTaskFromHistory_succes() throws Exception {
 		Task task1 = new Task("Task-1", "Discription", TaskProgress.NEW);
 		tm.addTask(task1);
 		MainTask maintask1 = new MainTask("Maintask-1", "Discription");
@@ -184,13 +169,79 @@ public class InMemoryHistoryManagerTEST {
 		SubTask subtask1 = new SubTask("Subtask-1", "Discription", maintask1.getId(), TaskProgress.NEW);
 		tm.addSubTask(subtask1);
 
+		tm.getTask(task1.getId());
+		tm.getMainTask(maintask1.getId());
+		tm.getSubTask(subtask1.getId());
+
+		List<Task> arr = tm.getHistory();
+		Assertions.assertTrue(arr.size() == 3);
+
+		// история задач пуста
+		Assertions.assertEquals(0, hm.getHistory().size());
+
+		// добавление задач в историю
+
+		// дублирование в начале списка
+		hm.addToHistory(task1);
+		hm.addToHistory(task1);
+		// дублирование в середине списка
+		hm.addToHistory(maintask1);
+		hm.addToHistory(maintask1);
+
+		// дублирование в конце списка
+		hm.addToHistory(subtask1);
+		hm.addToHistory(subtask1);
+
+		// история задач заполенена, дубли не записаны
+		Assertions.assertEquals(3, hm.getHistory().size());
+		Assertions.assertEquals(task1, hm.getHistory().get(0));
+		Assertions.assertEquals(maintask1, hm.getHistory().get(1));
+		Assertions.assertEquals(subtask1, hm.getHistory().get(2));
+
+		// проверка удаления задачи
+		Assertions.assertEquals(1, hm.remove(task1.getId()));
+		Assertions.assertEquals(1, hm.remove(maintask1.getId()));
+		Assertions.assertEquals(1, hm.remove(subtask1.getId()));
+
+		// история задач очищена
+		Assertions.assertEquals(0, hm.getHistory().size());
+	}
+
+	/*
+	 * удаление задач из истории и двусвязного списка
+	 */
+	@Test
+	void removeAll_deleteTasksFromHistoryByHashMap_succes() {
+		Map<Integer, Task> map = new HashMap<>();
+
+		Task task1 = new Task("Task-1", "Discription", TaskProgress.NEW);
+		tm.addTask(task1);
+		MainTask maintask1 = new MainTask("Maintask-1", "Discription");
+		tm.addMainTask(maintask1);
+		SubTask subtask1 = new SubTask("Subtask-1", "Discription", maintask1.getId(), TaskProgress.NEW);
+		tm.addSubTask(subtask1);
+
+		// история задач пуста
+		Assertions.assertEquals(0, hm.getHistory().size());
+
+		map.put(task1.getId(), task1);
+		map.put(maintask1.getId(), maintask1);
+		map.put(subtask1.getId(), subtask1);
+
 		hm.addToHistory(task1);
 		hm.addToHistory(maintask1);
 		hm.addToHistory(subtask1);
 
-		Assertions.assertEquals(1, hm.remove(maintask1.getId()));
+		// история задач заполнена
+		Assertions.assertEquals(3, hm.getHistory().size());
+		Assertions.assertEquals(task1, hm.getHistory().get(0));
+		Assertions.assertEquals(maintask1, hm.getHistory().get(1));
+		Assertions.assertEquals(subtask1, hm.getHistory().get(2));
 
-		Map<Integer, Node<Task>> arr = tm.getHistory();
-		Assertions.assertTrue(arr.size() == 0);
+		// удаление задач из истории по таблице
+		hm.removeAll(map);
+
+		// история задача очищена
+		Assertions.assertEquals(0, hm.getHistory().size());
 	}
 }

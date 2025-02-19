@@ -54,7 +54,6 @@ public class Main {
 		System.out.println("ИСТОРИЯ ЗАДАЧ HISTORYMANGER");
 		System.out.println("-----------------------------------------------");
 
-
 		System.out.println("\nОбратная последовательность");
 		System.out.println(hm.getHistory().size());
 		hm.getHistory().forEach(task -> System.out.println(task));
