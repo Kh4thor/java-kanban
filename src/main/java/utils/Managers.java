@@ -17,6 +17,11 @@ public final class Managers {
 
 	// вызов истории задач дефолтного менеджера
 	public static List<Task> getDefaultHistory() throws Exception {
-		return inMemoryTaskManager.getTasks();
+		return inMemoryTaskManager.getHistory();
+	}
+
+	// вызов истории задач дефолтного менеджера в обратном порядке
+	public static List<Task> getDefaultHistoryReverse() throws Exception {
+		return inMemoryTaskManager.getHistoryReverse();
 	}
 }

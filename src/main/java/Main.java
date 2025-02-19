@@ -41,26 +41,22 @@ public class Main {
 		tm.getSubTask(task3.getId());
 		tm.getSubTask(task3.getId());
 
-		System.out.println("Прямая последовательность");
-		System.out.println(tm.getTasks().size());
-		tm.getTasks().forEach(task -> System.out.println(task));
+		System.out.println("history before");
+		System.out.println(tm.getHistory().size());
+		tm.getHistory().forEach(task -> System.out.println(task));
 
 		System.out.println("\nОбратная последовательность");
-		System.out.println(tm.getTasks().size());
-		tm.getTasksReverse().forEach(task -> System.out.println(task));
+		System.out.println(tm.getHistory().size());
+		tm.getHistoryReverse().forEach(task -> System.out.println(task));
 
 		System.out.println();
 		System.out.println("-----------------------------------------------");
 		System.out.println("ИСТОРИЯ ЗАДАЧ HISTORYMANGER");
 		System.out.println("-----------------------------------------------");
 
-		hm.addToHistory(task1);
-		hm.addToHistory(task2);
-		hm.addToHistory(task3);
 
 		System.out.println("\nОбратная последовательность");
-		System.out.println(hm.getTasks().size());
-		hm.getTasks().forEach(task -> System.out.println(task));
-
+		System.out.println(hm.getHistory().size());
+		hm.getHistory().forEach(task -> System.out.println(task));
 	}
 }

@@ -2,7 +2,6 @@ package main.java.service;
 
 import java.util.Map;
 
-import main.java.utils.Node;
 import main.java.model.Task;
 import main.java.model.SubTask;
 import main.java.model.MainTask;
@@ -29,31 +28,16 @@ public class InMemoryTaskManager implements TaskManager {
 	 */
 
 	@Override
-	public Map<Integer, Node<Task>> getHistory() throws Exception {
-		return new HashMap<Integer, Node<Task>>(historyManager.getHistory());
-	}
-
-	public List<Task> getTasks() throws Exception {
-		return historyManager.getTasks();
+	public List<Task> getHistory() {
+		return new ArrayList<Task>(historyManager.getHistory());
 	}
 
 	/*
 	 * получить историю просмотра задач в обратном порядке
 	 */
 	@Override
-	public List<Task> getTasksReverse() throws Exception {
-		return historyManager.getTasksReverse();
-	}
-
-	/*
-	 * удалить задачу из истории просмотра задач
-	 */
-	public Integer removeFromHistory(int id) throws Exception {
-		if (id < 0) {
-			return -1;
-		}
-		historyManager.remove(id);
-		return 1;
+	public List<Task> getHistoryReverse() {
+		return historyManager.getHistoryReverse();
 	}
 
 	/*
@@ -178,33 +162,33 @@ public class InMemoryTaskManager implements TaskManager {
 	 * получить задачу по id
 	 */
 	@Override
-	public Task getTask(int taskId) throws Exception {
+	public Task getTask(int taskId) {
 		if (taskId > 0 && taskMap.containsKey(taskId)) {
 			Task task = taskMap.get(taskId);
 			historyManager.addToHistory(task);
 			return task;
 		}
-		throw new Exception("TaskNotFoundException");
+		return new Task(-1, "null", "fromGetTask", TaskProgress.DONE);
 	}
 
 	/*
 	 * получить главную задачу по id
 	 */
 	@Override
-	public MainTask getMainTask(int maintaskId) throws Exception {
+	public MainTask getMainTask(int maintaskId) {
 		if (maintaskId > 0 && mainTaskMap.containsKey(maintaskId)) {
 			MainTask mainTask = mainTaskMap.get(maintaskId);
 			historyManager.addToHistory(mainTask);
 			return mainTask;
 		}
-		throw new Exception("MaintaskNotFoundException");
+		return new MainTask(-1, "null", "fromGetMainTask");
 	}
 
 	/*
 	 * получить подзадачу по id-подзадачи
 	 */
 	@Override
-	public SubTask getSubTask(int id) throws Exception {
+	public SubTask getSubTask(int id) {
 		if (id > 0) {
 			for (int mainTaskId : mainTaskMap.keySet()) {
 				MainTask mainTask = mainTaskMap.get(mainTaskId);
@@ -220,7 +204,7 @@ public class InMemoryTaskManager implements TaskManager {
 				}
 			}
 		}
-		throw new Exception("SubtaskNotFoundException");
+		return new SubTask(-1, "null", "fromGetSubTask", -1, TaskProgress.NEW);
 	}
 
 	/*
@@ -242,8 +226,8 @@ public class InMemoryTaskManager implements TaskManager {
 	 * полчучить список всех главных задач
 	 */
 	@Override
-	public List<MainTask> getMainTasksList() {
-		List<MainTask> allMainTasksList = new ArrayList<>();
+	public List<Task> getMainTasksList() {
+		List<Task> allMainTasksList = new ArrayList<>();
 		if (mainTaskMap != null) {
 			for (int mainTaskId : mainTaskMap.keySet()) {
 				MainTask mainTask = mainTaskMap.get(mainTaskId);
@@ -296,6 +280,7 @@ public class InMemoryTaskManager implements TaskManager {
 	public Integer deleteTaskById(int taskId) {
 		if (taskId > 0) {
 			taskMap.remove(taskId);
+			historyManager.remove(taskId);
 			return taskId;
 		}
 		return -1;
@@ -306,11 +291,15 @@ public class InMemoryTaskManager implements TaskManager {
 	 */
 	@Override
 	public Integer deleteMainTaskById(int maintaskId) {
-		if (mainTaskMap != null && maintaskId > 0 && mainTaskMap.containsKey(maintaskId)) {
-			mainTaskMap.remove(maintaskId);
-			return maintaskId;
+		if (mainTaskMap == null || maintaskId < 1 || !mainTaskMap.containsKey(maintaskId)) {
+			return -1;
 		}
-		return -1;
+		MainTask mainTask = mainTaskMap.get(maintaskId);
+		Map<Integer, SubTask> subTaskMap = mainTask.getSubTaskMap();
+		historyManager.removeAll(subTaskMap);
+		historyManager.remove(maintaskId);
+		mainTaskMap.remove(maintaskId);
+		return 1;
 	}
 
 	/*
@@ -318,22 +307,25 @@ public class InMemoryTaskManager implements TaskManager {
 	 */
 	@Override
 	public Integer deleteSubTaskById(int sTaskId) {
-		if (mainTaskMap != null) {
-			for (int mainTaskId : mainTaskMap.keySet()) {
-				MainTask mainTask = mainTaskMap.get(mainTaskId);
-				Map<Integer, SubTask> subTaskMap = mainTask.getSubTaskMap();
-				if (subTaskMap != null) {
-					for (int subTaskId : subTaskMap.keySet()) {
-						if (subTaskId == sTaskId) {
-							subTaskMap.remove(subTaskId);
-							checkTaskProgress(mainTask);
-							return sTaskId;
-						}
-					}
+		if (mainTaskMap == null || sTaskId < 1) {
+			return -1;
+		}
+		for (int mainTaskId : mainTaskMap.keySet()) {
+			MainTask mainTask = mainTaskMap.get(mainTaskId);
+			Map<Integer, SubTask> subTaskMap = mainTask.getSubTaskMap();
+			if (subTaskMap == null) {
+				return -1;
+			}
+			for (int subTaskId : subTaskMap.keySet()) {
+				if (subTaskId == sTaskId) {
+					subTaskMap.remove(subTaskId);
+					historyManager.remove(subTaskId);
+					checkTaskProgress(mainTask);
+					return sTaskId;
 				}
 			}
 		}
-		return -1;
+		return 0;
 	}
 
 	/*
@@ -342,6 +334,7 @@ public class InMemoryTaskManager implements TaskManager {
 	@Override
 	public Integer deleteAllTasks() throws Exception {
 		if (taskMap != null) {
+			historyManager.removeAll(taskMap);
 			taskMap.clear();
 			return 1;
 		}
@@ -354,6 +347,8 @@ public class InMemoryTaskManager implements TaskManager {
 	@Override
 	public Integer deleteAllMainTasks() throws Exception {
 		if (mainTaskMap != null) {
+			deleteAllSubTasks();
+			historyManager.removeAll(mainTaskMap);
 			mainTaskMap.clear();
 			return 1;
 		}
@@ -368,10 +363,12 @@ public class InMemoryTaskManager implements TaskManager {
 		if (mainTaskMap != null) {
 			for (int mainTaskId : mainTaskMap.keySet()) {
 				MainTask mainTask = mainTaskMap.get(mainTaskId);
+				Map<Integer, SubTask> subTaskMap = mainTask.getSubTaskMap();
+				historyManager.removeAll(subTaskMap);
 				mainTask.clearSubTaskMap();
 				checkTaskProgress(mainTask);
-				return 1;
 			}
+			return 1;
 		}
 		throw new Exception("SubtaskMapNotFoundException");
 	}
@@ -398,7 +395,7 @@ public class InMemoryTaskManager implements TaskManager {
 			TaskProgress subTaskProgress = subTask.getTaskProgress();
 			if (subTaskProgress.equals(TaskProgress.DONE)) {
 				mainTask.setTaskProgress(TaskProgress.IN_PROGRESS);
-				subTaskCountNew++;
+				subTaskCountDone++;
 			}
 			if (subTaskProgress.equals(TaskProgress.NEW)) {
 				subTaskCountNew++;

@@ -1,17 +1,19 @@
 package main.java.interfaces;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
-import main.java.utils.Node;
 import main.java.model.Task;
 import main.java.model.SubTask;
 import main.java.model.MainTask;
 
 public interface TaskManager {
 
-	// получить список узлов задач
-	Map<Integer, Node<Task>> getHistory() throws Exception;
+	// получить список из истории задач в прямом порядке
+	List<Task> getHistory();
+
+	// получить список из истории задач в обратном порядке
+	List<Task> getHistoryReverse();
 
 	// создать задачу
 	Integer addTask(Task task);
@@ -32,19 +34,19 @@ public interface TaskManager {
 	Integer updateSubTask(SubTask newSubtask);
 
 	// получить задачу по id
-	Task getTask(int taskId) throws Exception;
+	Task getTask(int taskId);
 
 	// получить главную задачу по id
-	MainTask getMainTask(int maintaskId) throws Exception;
+	MainTask getMainTask(int maintaskId);
 
 	// получить подзадачу по id-подзадачи
-	SubTask getSubTask(int id) throws Exception;
+	SubTask getSubTask(int id);
 
 	// получить список всех задач
 	List<Task> getTasksList();
 
 	// полчучить список всех главных задач
-	List<MainTask> getMainTasksList();
+	List<Task> getMainTasksList();
 
 	// получить список всех подзадач
 	List<SubTask> getSubTasksList();
@@ -72,11 +74,4 @@ public interface TaskManager {
 
 	// очистить все хранилища
 	Integer clearAllDepos() throws Exception;
-
-	// получить список из истории задач в прямом порядке
-	List<Task> getTasks() throws Exception;
-
-	// получить список из истории задач в обратном порядке
-	List<Task> getTasksReverse() throws Exception;
-
 }

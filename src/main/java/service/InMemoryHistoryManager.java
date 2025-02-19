@@ -24,99 +24,104 @@ public class InMemoryHistoryManager implements HistoryManager {
 	 * добавить задачу в историю
 	 */
 	@Override
-	public Integer addToHistory(Task task) throws Exception {
+	public Integer addToHistory(Task task) {
 		if (task != null) {
 			// получить параметры
 			int id = task.getId();
 			String name = task.getName();
 			String discription = task.getDiscription();
 			TaskProgress progress = task.getTaskProgress();
+			Task snapShotTask = task;
 
-			// если task - Task, делаем snapshot, добавляем его в связку и записываем в
-			// хранилище историй
+			// сделать слепок объекта класса типа Task
 			if (task.getClass() == Task.class) {
-				Task newTask = new Task(id, name, discription, progress);
-				Node<Task> lastNode = linkLast(newTask);
-				nodeMap.put(id, lastNode);
-				return 1;
+				snapShotTask = new Task(id, name, discription, progress);
 
-				// если task - Maintask, делаем snapshot, добавляем его в связку и записываем в
-				// хранилище историй
+				// сделать слепок объекта класса типа MainTask
 			} else if (task.getClass() == MainTask.class) {
-				MainTask newMaintask = new MainTask(id, name, discription);
-				Node<Task> lastNode = linkLast(newMaintask);
-				nodeMap.put(id, lastNode);
-				return 1;
+				snapShotTask = new MainTask(id, name, discription);
 
-				// если task - Subtask, делаем snapshot, добавляем его в связку и записываем в
-				// хранилище историй
+				// сделать слепок объекта класса типа SubTask
 			} else if (task.getClass() == SubTask.class) {
 				int maintaskId = ((SubTask) task).getMaintaskId();
-				SubTask newSubtask = new SubTask(id, name, discription, maintaskId, progress);
-				Node<Task> lastNode = linkLast(newSubtask);
-				nodeMap.put(id, lastNode);
-				return 1;
+				snapShotTask = new SubTask(id, name, discription, maintaskId, progress);
 			}
+			// записать слепок в качестве последнего узла в двусвязный список
+			Node<Task> lastNode = linkLast(snapShotTask);
+
+			// добавить узел в хранилище
+			nodeMap.put(id, lastNode);
+			return 1;
 		}
 		return -1;
 	}
 
 	/*
-	 * получить хранилище узлов истории задач
+	 * получить историю задач (без ограничений)
 	 */
 	@Override
-	public Map<Integer, Node<Task>> getHistory() {
-		return new HashMap<Integer, Node<Task>>(nodeMap);
-	}
-
-	/*
-	 * получить историю задач в прямом порядке
-	 */
-	@Override
-	public List<Task> getTasks() throws Exception {
+	public List<Task> getHistory() {
 		List<Task> arr = new ArrayList<>();
-		// если связка не null
+		// если двусвязный список не null
 		if (head != null) {
 			Node<Task> currentNode = head;
-			// итерация по связке и запись каждого значения узла в список
+			// итерация по двусвязному списку и запись каждого значения узла в список
+			// истории задач
 			while (currentNode != null) {
 				arr.add(currentNode.data);
 				currentNode = currentNode.next;
 			}
-			return arr;
 		}
-		throw new Exception("getTaskListNotFoundException");
+		return arr;
 	}
 
 	/*
-	 * получить историю задач в обратном порядке
+	 * получить историю задач (без огрничений) в обратном порядке
 	 */
-	public List<Task> getTasksReverse() throws Exception {
+	public List<Task> getHistoryReverse() {
 		List<Task> arr = new ArrayList<>();
-		// если связка не null
+		// если двусвязный список не null
 		if (tail != null) {
 			Node<Task> currentNode = tail;
-			// итерация по связке и запись каждого значения узла в список
+			// итерация по двусвязному списку и запись каждого значения узла в список
+			// истории задач
 			while (currentNode != null) {
 				arr.add(currentNode.data);
 				currentNode = currentNode.prev;
 			}
-			return arr;
-		}
-		throw new Exception("getTaskListReverseNotFoundException");
-	}
 
-	@Override
-	public Integer remove(int id) {
-		if (id > 0) {
-			Node<Task> node = nodeMap.remove(id);
-			return removeNode(node);
 		}
-		return -1;
+		return arr;
 	}
 
 	/*
-	 * добавить узел в конец связки
+	 * удадить задачу из истории задач
+	 */
+	@Override
+	public Integer remove(int id) {
+		if (id < 1) {
+			return -1;
+		}
+		Node<Task> node = nodeMap.remove(id);
+		return removeNode(node);
+	}
+
+	/*
+	 * удалить задачи из исторрии по списку
+	 */
+	@Override
+	public <T extends Task> Integer removeAll(Map<Integer, T> taskMap) {
+		if (taskMap == null) {
+			return -1;
+		}
+		for (int id : taskMap.keySet()) {
+			remove(id);
+		}
+		return 1;
+	}
+
+	/*
+	 * добавить узел в конец двусвязного списка
 	 */
 	private Node<Task> linkLast(Task newTask) {
 		// если newTask уже есть в истории...
@@ -128,26 +133,25 @@ public class InMemoryHistoryManager implements HistoryManager {
 			// удаление объекта из коллекции
 			removeNode(node);
 		}
-		// привязка узла в конец связки
+		// привязка узла в конец двусвязного списка
 		int id = newTask.getId();
 		Node<Task> oldTail = tail;
 		Node<Task> lastNode = new Node<Task>(tail, newTask, null);
 		// запись нового узла в хранилище историй
 		nodeMap.put(id, lastNode);
 		tail = lastNode;
-		tail.prev = oldTail;
-		// если связка пустая
+		// если двусвязный список пустая
 		if (oldTail == null) {
 			head = lastNode;
-			return lastNode;
-			// если связка не пустая
-		} else
+			// если двусвязный список не пустой
+		} else {
 			oldTail.next = lastNode;
+		}
 		return lastNode;
 	}
 
 	/*
-	 * удаление узла из связки и объекта из коллекции
+	 * удаление узла из двусвязного списка
 	 */
 	private Integer removeNode(Node<Task> node) {
 		if (node == null) {
