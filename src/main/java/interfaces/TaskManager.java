@@ -1,7 +1,6 @@
 package main.java.interfaces;
 
 import java.util.List;
-import java.util.Map;
 
 import main.java.model.Task;
 import main.java.model.SubTask;
