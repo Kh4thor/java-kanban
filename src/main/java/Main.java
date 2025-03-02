@@ -1,61 +1,59 @@
 package main.java;
 
-import main.java.model.Task;
-import main.java.model.SubTask;
-import main.java.utils.Managers;
 import main.java.model.MainTask;
-import main.java.model.TaskProgress;
+import main.java.model.SubTask;
+import main.java.model.Task;
+import main.java.service.FileBackedTaskManager;
+import main.java.utils.Managers;
 import main.java.interfaces.TaskManager;
-import main.java.interfaces.HistoryManager;
-import main.java.service.InMemoryHistoryManager;
+
+import java.io.File;
+
+import org.junit.jupiter.api.Assertions;
 
 public class Main {
 
 	public static void main(String[] args) throws Exception {
 
-		TaskManager tm = Managers.getDefault();
-		HistoryManager hm = new InMemoryHistoryManager();
+		/*
+		 * организация работы с файлом
+		 */
 
-		System.out.println("-----------------------------------------------");
-		System.out.println("ИСТОРИЯ ЗАДАЧ TASKMANAGER");
-		System.out.println("-----------------------------------------------");
+		// тестовый файл с указанным именем не существует
+		File file = new File("TestDataFBTM.csv");
 
-		Task task1 = new Task("Task-1", "Discription", TaskProgress.NEW);
-		tm.addTask(task1);
+		// менеджером задач создатся новый тестовый файл
+		TaskManager fbtm = Managers.getDefaultFileBackedTaskManager(file);
 
-		MainTask task2 = new MainTask("Task-2", "Discription");
-		tm.addMainTask(task2);
+		// тестовый файл задан в качестве файла по умолчанию
+		file = FileBackedTaskManager.defaultFile;
 
-		SubTask task3 = new SubTask("Task-3", "Discription", task2.getId(), TaskProgress.NEW);
-		tm.addSubTask(task3);
+		// запись новой главной задачи в хранилище и тестовый файл
+		MainTask maintask1 = new MainTask("MainTask-1", "MainTask1-description");
+		int id_maintask1 = fbtm.addMainTask(maintask1);
+		maintask1 = fbtm.getMainTask(id_maintask1);
 
-		// дублирование задач в начале истории
-		tm.getTask(task1.getId());
-		tm.getTask(task1.getId());
+		System.out.println("***1" + maintask1);
 
-		// дублирование задач в середине истории
-		tm.getMainTask(task2.getId());
-		tm.getMainTask(task2.getId());
+		// все хранилища очищены
+		fbtm.clearAllDepos();
 
-		// дублирование задач в конце истории
-		tm.getSubTask(task3.getId());
-		tm.getSubTask(task3.getId());
+		/*
+		 * чтение задач из cуществующего тестового файла
+		 */
+		fbtm = FileBackedTaskManager.loadFromFile(file);
 
-		System.out.println("history before");
-		System.out.println(tm.getHistory().size());
-		tm.getHistory().forEach(task -> System.out.println(task));
+		System.out.println("***2" + maintask1);
 
-		System.out.println("\nОбратная последовательность");
-		System.out.println(tm.getHistory().size());
-		tm.getHistoryReverse().forEach(task -> System.out.println(task));
+		System.out.println(fbtm.getMainTask(2));
+		fbtm.getMainTasksList().forEach(e -> System.out.println(e));
 
-		System.out.println();
-		System.out.println("-----------------------------------------------");
-		System.out.println("ИСТОРИЯ ЗАДАЧ HISTORYMANGER");
-		System.out.println("-----------------------------------------------");
+		// тестовый файл очищен
+		FileBackedTaskManager.clear();
 
-		System.out.println("\nОбратная последовательность");
-		System.out.println(hm.getHistory().size());
-		hm.getHistory().forEach(task -> System.out.println(task));
+//		// тестовый файл удален
+//		Assertions.assertTrue(file.delete());
+//		Assertions.assertTrue(!file.exists());
+
 	}
 }

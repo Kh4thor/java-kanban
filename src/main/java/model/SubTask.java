@@ -9,8 +9,8 @@ public class SubTask extends Task {
 	/*
 	 * конструктор для создания подзадачи
 	 */
-	public SubTask(String name, String discription, int mainTaskId, TaskProgress taskprogres) {
-		super(name, discription, taskprogres);
+	public SubTask(String name, String discription, int mainTaskId) {
+		super(name, discription, TaskProgress.NEW);
 		this.mainTaskId = mainTaskId;
 	}
 
@@ -20,6 +20,13 @@ public class SubTask extends Task {
 	public SubTask(int subtaskId, String name, String discription, int mainTaskId, TaskProgress taskProgress) {
 		super(subtaskId, name, discription, taskProgress);
 		this.mainTaskId = mainTaskId;
+	}
+
+	/*
+	 * возврат типа класса через перечисление
+	 */
+	public TaskType getType() {
+		return TaskType.SUBTASK;
 	}
 
 	public int getMaintaskId() {
@@ -45,5 +52,11 @@ public class SubTask extends Task {
 		SubTask other = (SubTask) obj;
 		return Objects.equals(description, other.description) && id == other.id && Objects.equals(name, other.name)
 				&& taskProgress == other.taskProgress;
+	}
+
+	@Override
+	public String toString() {
+		return "[id=" + id + ", class=" + this.getClass().getSimpleName() + ", name=" + name + ", taskProgress="
+				+ taskProgress + ", description=" + description + ", maintask_id=" + getMaintaskId() + "]";
 	}
 }

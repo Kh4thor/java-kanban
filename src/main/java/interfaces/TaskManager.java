@@ -7,7 +7,7 @@ import main.java.model.SubTask;
 import main.java.model.MainTask;
 
 public interface TaskManager {
-
+	
 	// получить список из истории задач в прямом порядке
 	List<Task> getHistory();
 

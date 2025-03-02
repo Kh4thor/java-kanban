@@ -15,12 +15,11 @@ import java.util.ArrayList;
 
 public class InMemoryTaskManager implements TaskManager {
 
-	private int id = 1;
+	protected static int id = 0;
 
 	private HistoryManager historyManager = new InMemoryHistoryManager();
-
-	private Map<Integer, Task> taskMap = new HashMap<>();
-	private Map<Integer, MainTask> mainTaskMap = new HashMap<>();
+	protected static Map<Integer, Task> taskMap = new HashMap<>();
+	protected static Map<Integer, MainTask> mainTaskMap = new HashMap<>();
 	// каждое хранилище с подзадачами хранится в своей главной задаче
 
 	/*
@@ -41,57 +40,61 @@ public class InMemoryTaskManager implements TaskManager {
 	}
 
 	/*
-	 * добавить задачу
+	 * добавить задачу в хранилище
 	 */
 	@Override
 	public Integer addTask(Task task) {
-		boolean condition = task != null && task.getClass() == Task.class && task != null
-				&& !taskMap.containsKey(task.getId()) && task.getId() == 0;
-		if (condition) {
-			task.setId(id++);
-			int taskId = task.getId();
-			String taskName = task.getName();
-			if (!taskName.isBlank() && !taskName.isEmpty()) {
-				taskMap.put(taskId, task);
-				return taskId;
+		if (task != null && task.getClass() == Task.class && !taskMap.containsKey(task.getId()) && task.getId() == 0) {
+			if (!task.getName().isBlank() && !task.getName().isEmpty()) {
+				String name = task.getName();
+				String descriptoin = task.getDescription();
+				TaskProgress taskProgress = TaskProgress.NEW;
+				Task snapshot = new Task(++id, name, descriptoin, taskProgress);
+				int id = snapshot.getId();
+				taskMap.put(id, snapshot);
+				return id;
 			}
 		}
 		return -1;
 	}
 
 	/*
-	 * добавить главную задачу
+	 * добавить главную задачу в хранилище
 	 */
 	@Override
 	public Integer addMainTask(MainTask mainTask) {
 		if (mainTask != null && mainTask.getId() == 0 && !mainTaskMap.containsKey(mainTask.getId())) {
-			mainTask.setId(id++);
-			int mainTaskId = mainTask.getId();
 			String mainTaskName = mainTask.getName();
 			if (!mainTaskName.isBlank() && !mainTaskName.isEmpty()) {
-				mainTaskMap.put(mainTask.getId(), mainTask);
-				return mainTaskId;
+				String name = mainTask.getName();
+				String descriptoin = mainTask.getDescription();
+				MainTask mainTaskSnapshot = new MainTask(++id, name, descriptoin);
+				int id = mainTaskSnapshot.getId();
+				mainTaskMap.put(id, mainTaskSnapshot);
+				return id;
 			}
 		}
 		return -1;
 	}
 
 	/*
-	 * добавить подзадачу
+	 * добавить подзадачу в хранилище
 	 */
 	@Override
 	public Integer addSubTask(SubTask subtask) {
 		if (subtask != null && subtask.getId() == 0) {
 			int mainTaskId = subtask.getMaintaskId();
 			if (mainTaskMap.containsKey(mainTaskId)) {
-				subtask.setId(id++);
-				int subTaskId = subtask.getId();
+				String name = subtask.getName();
+				String description = subtask.getDescription();
+				TaskProgress taskProgress = TaskProgress.NEW;
 				MainTask mainTask = mainTaskMap.get(mainTaskId);
-				String subtaskName = subtask.getName();
-				if (!subtaskName.isBlank() && !subtaskName.isEmpty()) {
-					mainTask.addSubTaskToDepo(subtask);
+				if (!name.isBlank() && !name.isEmpty()) {
+					SubTask subtaskSnapShot = new SubTask(++id, name, description, mainTaskId, taskProgress);
+					int id = subtaskSnapShot.getId();
+					mainTask.addSubTaskToDepo(subtaskSnapShot);
 					checkTaskProgress(mainTask);
-					return subTaskId;
+					return id;
 				}
 			}
 		}
@@ -125,9 +128,9 @@ public class InMemoryTaskManager implements TaskManager {
 			if (!newName.isEmpty() && !newName.isBlank()) {
 				int mainTaskId = newMainTask.getId();
 				MainTask mainTask = mainTaskMap.get(mainTaskId);
-				String newDiscription = newMainTask.getDiscription();
+				String newDescription = newMainTask.getDescription();
 				mainTask.setName(newName);
-				mainTask.setDiscription(newDiscription);
+				mainTask.setDescription(newDescription);
 				return newMainTask.getId();
 			}
 		}
@@ -168,7 +171,7 @@ public class InMemoryTaskManager implements TaskManager {
 			historyManager.addToHistory(task);
 			return task;
 		}
-		return new Task(-1, "null", "fromGetTask", TaskProgress.DONE);
+		return new Task(-1, "null", "from_getTask", TaskProgress.UNDEFINED);
 	}
 
 	/*
@@ -181,7 +184,7 @@ public class InMemoryTaskManager implements TaskManager {
 			historyManager.addToHistory(mainTask);
 			return mainTask;
 		}
-		return new MainTask(-1, "null", "fromGetMainTask");
+		return new MainTask(-1, "null", "from_getMainTask");
 	}
 
 	/*
@@ -204,7 +207,7 @@ public class InMemoryTaskManager implements TaskManager {
 				}
 			}
 		}
-		return new SubTask(-1, "null", "fromGetSubTask", -1, TaskProgress.NEW);
+		return new SubTask(-1, "null", "from_getSubTask", -1, TaskProgress.NEW);
 	}
 
 	/*
@@ -404,10 +407,10 @@ public class InMemoryTaskManager implements TaskManager {
 				mainTask.setTaskProgress(TaskProgress.IN_PROGRESS);
 			}
 		}
-		if (subTaskCountNew == subTaskMap.size()) {
+		if (subTaskCountNew > 0 && subTaskCountNew == subTaskMap.size()) {
 			mainTask.setTaskProgress(TaskProgress.NEW);
 		}
-		if (subTaskCountDone == subTaskMap.size()) {
+		if (subTaskCountDone > 0 && subTaskCountDone == subTaskMap.size()) {
 			mainTask.setTaskProgress(TaskProgress.DONE);
 		}
 	}

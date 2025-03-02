@@ -29,7 +29,7 @@ public class InMemoryHistoryManager implements HistoryManager {
 			// получить параметры
 			int id = task.getId();
 			String name = task.getName();
-			String discription = task.getDiscription();
+			String discription = task.getDescription();
 			TaskProgress progress = task.getTaskProgress();
 			Task snapShotTask = task;
 
@@ -83,6 +83,7 @@ public class InMemoryHistoryManager implements HistoryManager {
 		// если двусвязный список не null
 		if (tail != null) {
 			Node<Task> currentNode = tail;
+			
 			// итерация по двусвязному списку и запись каждого значения узла в список
 			// истории задач
 			while (currentNode != null) {
@@ -130,19 +131,24 @@ public class InMemoryHistoryManager implements HistoryManager {
 
 			// удаление объекта из коллекции
 			Node<Task> node = nodeMap.remove(newTask.getId());
-			// удаление объекта из коллекции
+			
+			// удаление объекта из двусвязного списка
 			removeNode(node);
 		}
+		
 		// привязка узла в конец двусвязного списка
 		int id = newTask.getId();
 		Node<Task> oldTail = tail;
 		Node<Task> lastNode = new Node<Task>(tail, newTask, null);
+		
 		// запись нового узла в хранилище историй
 		nodeMap.put(id, lastNode);
 		tail = lastNode;
+		
 		// если двусвязный список пустая
 		if (oldTail == null) {
 			head = lastNode;
+			
 			// если двусвязный список не пустой
 		} else {
 			oldTail.next = lastNode;
@@ -157,18 +163,23 @@ public class InMemoryHistoryManager implements HistoryManager {
 		if (node == null) {
 			return -1;
 		}
+		// если в списке один элемент
 		if (head == node && tail == node) {
 			head = null;
 			tail = null;
 		} else {
+			// если узел на удаление - не первый
 			if (node.prev != null) {
 				node.prev.next = node.next;
 			} else {
+				// если узел в списке - второй
 				head = node.next;
 			}
+			// если узел на удаление - не последний 
 			if (node.next != null) {
 				node.next.prev = node.prev;
 			} else {
+				// если узел на удаление в списке - предпоследний
 				tail = node.prev;
 			}
 		}
