@@ -23,7 +23,7 @@ public class MainTask extends Task implements HasSubTask {
 	public MainTask(int id, String name, String discription) {
 		super(id, name, discription, TaskProgress.NEW);
 	}
-	
+
 	/*
 	 * возврат типа класса через перечисление
 	 */
