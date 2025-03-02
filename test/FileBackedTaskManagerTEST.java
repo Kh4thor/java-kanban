@@ -41,9 +41,9 @@ public class FileBackedTaskManagerTEST {
 
 		// запись новой задачи в хранилище и тестовый файл
 		Task task1 = new Task("Task-1", "Task1-description");
-		int id_task1 = fbtm.addTask(task1);
-		task1 = fbtm.getTask(id_task1);
-		Assertions.assertTrue(id_task1 > 0);
+		int idtask1 = fbtm.addTask(task1);
+		task1 = fbtm.getTask(idtask1);
+		Assertions.assertTrue(idtask1 > 0);
 		Assertions.assertTrue(fbtm.getTasksList().contains(task1));
 		Assertions.assertTrue(file.length() > 0);
 
@@ -53,15 +53,15 @@ public class FileBackedTaskManagerTEST {
 
 		// запись новой главной задачи в хранилище и тестовый файл
 		MainTask maintask1 = new MainTask("MainTask-1", "MainTask1-description");
-		int id_maintask1 = fbtm.addMainTask(maintask1);
-		maintask1 = fbtm.getMainTask(id_maintask1);
-		Assertions.assertTrue(id_maintask1 == ++id_task1);
+		int idmaintask1 = fbtm.addMainTask(maintask1);
+		maintask1 = fbtm.getMainTask(idmaintask1);
+		Assertions.assertTrue(idmaintask1 == ++idtask1);
 		Assertions.assertTrue(fbtm.getMainTasksList().contains(maintask1));
 
 		// запись новой подзадачи в хранилище и тестовый файл
-		SubTask subtask1 = new SubTask("SubTask-1", "SubTask1-description", id_maintask1);
-		int id_subtask1 = fbtm.addSubTask(subtask1);
-		subtask1 = fbtm.getSubTask(id_subtask1);
+		SubTask subtask1 = new SubTask("SubTask-1", "SubTask1-description", idmaintask1);
+		int idsubtask1 = fbtm.addSubTask(subtask1);
+		subtask1 = fbtm.getSubTask(idsubtask1);
 
 		// измнение прогресса подзадачи
 		subtask1.setTaskProgress(TaskProgress.IN_PROGRESS);
@@ -87,18 +87,18 @@ public class FileBackedTaskManagerTEST {
 
 		// запись новой задачи в хранилище и тестовый файл
 		Task task2 = new Task("Task-2", "Task2-description");
-		int id_task2 = fbtm.addTask(task2);
-		task2 = fbtm.getTask(id_task2);
+		int idtask2 = fbtm.addTask(task2);
+		task2 = fbtm.getTask(idtask2);
 
 		// запись новой главной задачи в хранилище и тестовый файл
 		MainTask maintask2 = new MainTask("MainTask-2", "MainTask2-description");
-		int id_maintask2 = fbtm.addMainTask(maintask2);
-		maintask2 = fbtm.getMainTask(id_maintask2);
+		int idmaintask2 = fbtm.addMainTask(maintask2);
+		maintask2 = fbtm.getMainTask(idmaintask2);
 
 		// запись новой подзадачи в хранилище и тестовый файл
-		SubTask subtask2 = new SubTask("SubTask-2", "SubTask2-description", id_maintask2);
-		int id_subtask2 = fbtm.addSubTask(subtask2);
-		subtask2 = fbtm.getSubTask(id_subtask2);
+		SubTask subtask2 = new SubTask("SubTask-2", "SubTask2-description", idmaintask2);
+		int idsubtask2 = fbtm.addSubTask(subtask2);
+		subtask2 = fbtm.getSubTask(idsubtask2);
 
 		// новая задача, главная задача и подзадачи добавлены
 		Assertions.assertTrue(fbtm.getTasksList().contains(task1));
