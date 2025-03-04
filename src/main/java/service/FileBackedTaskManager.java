@@ -1,7 +1,6 @@
 package main.java.service;
 
 import java.io.File;
-import java.util.Map;
 import java.util.List;
 import java.io.FileWriter;
 import java.io.FileReader;
@@ -18,23 +17,23 @@ import main.java.utils.ManagerSaveException;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
+	static FileBackedTaskManager fileBackedTaskManager;
+
 	/*
 	 * рабочий файл по умолчанию
 	 */
-	public static String defaultPath = "src\\sources\\data";
-	public static String defaultName = "DefaultDataFBTM.csv";
-	public static File defaultFile = new File(defaultPath, defaultName);
+	public static File defaultFile = new File("src\\sources\\data\\", "DefaultDataFBTM.csv");
 
 	/*
 	 * метод восстановления состояния класса из рабочего файла
 	 */
 	public static FileBackedTaskManager loadFromFile() {
-		final FileBackedTaskManager result = new FileBackedTaskManager();
+		fileBackedTaskManager = new FileBackedTaskManager();
 
 		// востановить рабочий файл в случае его отсутствия
 		if (!defaultFile.exists()) {
 			try {
-				restoreFile(defaultFile);
+				restoreFile();
 			} catch (ManagerSaveException e) {
 				e.getMessage();
 			}
@@ -45,14 +44,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 		} catch (ManagerSaveException e) {
 			e.getMessage();
 		}
-		return result;
+		return fileBackedTaskManager;
 	}
 
 	/*
 	 * метод восстановления состояния класса из стороннего файла
 	 */
 	public static FileBackedTaskManager loadFromFile(File file) {
-		defaultFile = new File(defaultPath, file.getName());
+		defaultFile = file;
 		return loadFromFile();
 	}
 
@@ -62,8 +61,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 	private static void readFile() throws ManagerSaveException {
 		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(defaultFile))) {
 			while (bufferedReader.ready()) {
+
 				// считывание файла построчно
 				String line = bufferedReader.readLine();
+				if (line.equals("id,type,name,status,description,epic")) {
+					continue;
+				}
 
 				// конвертация задачи в строку
 				Task task = convertStringToTask(line);
@@ -73,20 +76,19 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 				// запись конвертированой задачи в хранилище
 				if (taskType.equals(TaskType.TASK)) {
-					taskMap.put(task.getId(), task);
+					fileBackedTaskManager.taskMap.put(task.getId(), task);
 
 					// запись конвертированой главной задачи в хранилище
 				} else if (taskType.equals(TaskType.MAINTASK)) {
-					mainTaskMap.put(task.getId(), (MainTask) task);
+					fileBackedTaskManager.mainTaskMap.put(task.getId(), (MainTask) task);
 
 					// запись конвертированой подзадачи в хранилище
 				} else if (taskType.equals(TaskType.SUBTASK)) {
 					SubTask subTask = (SubTask) task;
 					int mainTaskId = subTask.getMaintaskId();
-					if (mainTaskMap.containsKey(mainTaskId)) {
-						MainTask mainTask = mainTaskMap.get(mainTaskId);
-						Map<Integer, SubTask> subTaskMap = mainTask.getSubTaskMap();
-						subTaskMap.put(subTask.getId(), subTask);
+					if (fileBackedTaskManager.mainTaskMap.containsKey(mainTaskId)) {
+						MainTask mainTask = fileBackedTaskManager.mainTaskMap.get(mainTaskId);
+						mainTask.addSubTaskToDepo(subTask);
 					}
 				}
 			}
@@ -96,52 +98,20 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 	}
 
 	// метод востановления рабочего файла в случае его отсутствия
-	private static void restoreFile(File file) throws ManagerSaveException {
+	private static void restoreFile() throws ManagerSaveException {
 
-		File newFile = new File(defaultPath, file.getName());
+		defaultFile = new File(defaultFile.getPath());
+
 		try {
-			if (newFile.createNewFile()) {
-				System.out.println("Файл " + file.getName() + " не найден.");
-				System.out.println("Файл " + file.getName() + " создан в каталоге " + defaultPath);
+			if (defaultFile.createNewFile()) {
+				System.out.println("Файл " + defaultFile.getName() + " не найден.");
+				System.out.println("Файл " + defaultFile.getName() + " создан в каталоге " + defaultFile.getPath());
 			} else {
 				System.out.println("Файл уже существует.");
 			}
 		} catch (IOException e) {
 			throw new ManagerSaveException("Ошибка при создании файла");
 		}
-	}
-
-	/*
-	 * метод очистки файла
-	 */
-	public static Integer clear() {
-		// считывание полей рабочего файла
-		String name = defaultFile.getName();
-
-		if (name.isBlank() || name.isEmpty()) {
-			return -1;
-		}
-
-		// очистка хранилищ всех типов задач
-		taskMap.clear();
-		mainTaskMap.clear();
-
-		// удаление рабочего файла
-		defaultFile.delete();
-
-		// создание нового рабочего файла
-		File file = new File("src\\sources\\data", name);
-
-		try {
-			if (file.createNewFile()) {
-				System.out.println("Хранилища и рабочий файл очищены.");
-			} else {
-				System.out.println("Неудачная попытка очистить файл.");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return 1;
 	}
 
 	/*
@@ -152,6 +122,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 			// лист хранилищ всех типов задач (задачи, главные задачи, подзадачи)
 			List<List<? extends Task>> lists = List.of(getTasksList(), getMainTasksList(), getSubTasksList());
+
+			// доавление хидера в файл
+			String hidder = "id,type,name,status,description,epic";
+			bufferedWriter.append(hidder + "\n");
 
 			// перебор листа хранилищ всех типов задач
 			for (int i = 0; i < lists.size(); i++) {
@@ -190,9 +164,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 				String discription = values[4];
 
 				// поиск максимального id задачи в файле
-				if (id > InMemoryTaskManager.id) {
-					InMemoryTaskManager.id = id;
+				int maxid = 0;
+				if (id > maxid) {
+					maxid = id;
 				}
+				fileBackedTaskManager.id = maxid;
 
 				// присваивание статуса прогресса задачи
 				TaskProgress taskProgress = TaskProgress.UNDEFINED;
@@ -365,4 +341,157 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 		return testNumber;
 	}
 
+	/*
+	 * удалить задачу по id
+	 */
+	@Override
+	public Integer deleteTaskById(int id) {
+
+		// удаление задачи из хранилища
+		int testNumber = super.deleteTaskById(id);
+
+		// удаление задачи из файла
+		try {
+			saveToFile();
+		} catch (ManagerSaveException e) {
+			System.out.println(e.getMessage());
+		}
+		return testNumber;
+	}
+
+	/*
+	 * удалить главную задачу по id
+	 */
+	@Override
+	public Integer deleteMainTaskById(int id) {
+
+		// удаление главной задачи из хранилища
+		int testNumber = super.deleteMainTaskById(id);
+
+		// удаление главной задачи из файла
+		try {
+			saveToFile();
+		} catch (ManagerSaveException e) {
+			System.out.println(e.getMessage());
+		}
+		return testNumber;
+	}
+
+	/*
+	 * удалить подзадачу по id
+	 */
+	@Override
+	public Integer deleteSubTaskById(int id) {
+
+		// удаление подзадачи из хранилища
+		int testNumber = super.deleteSubTaskById(id);
+
+		// удаление подзадачи из файла
+		try {
+			saveToFile();
+		} catch (ManagerSaveException e) {
+			System.out.println(e.getMessage());
+		}
+		return testNumber;
+	}
+
+	/*
+	 * удалить все задачи
+	 */
+	@Override
+	public Integer deleteAllTasks() {
+		int testNumber = -1;
+
+		// удаление всех задач из хранилища
+		try {
+			testNumber = super.deleteAllTasks();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+
+		// удаление всех задач из файла
+		try {
+			saveToFile();
+		} catch (ManagerSaveException e) {
+			System.out.println(e.getMessage());
+		}
+		return testNumber;
+	}
+
+	/*
+	 * удалить все главные задачи
+	 */
+	@Override
+	public Integer deleteAllMainTasks() {
+		int testNumber = -1;
+
+		// удаление всех главных задач из хранилища
+		try {
+			testNumber = super.deleteAllMainTasks();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+
+		// удаление всех задач из файла
+		try {
+			saveToFile();
+		} catch (ManagerSaveException e) {
+			System.out.println(e.getMessage());
+		}
+		return testNumber;
+	}
+
+	/*
+	 * удалить все подзадачи
+	 */
+	@Override
+	public Integer deleteAllSubTasks() {
+		int testNumber = -1;
+
+		// удаление всех подзадач из хранилища
+		try {
+			testNumber = super.deleteAllSubTasks();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+
+		// удаление всех подзадач из файла
+		try {
+			saveToFile();
+		} catch (ManagerSaveException e) {
+			System.out.println(e.getMessage());
+		}
+		return testNumber;
+	}
+
+	/*
+	 * очистить все хранилища
+	 */
+	@Override
+	public Integer clearAllDepos() {
+		int testNumber = -1;
+
+		// удаление всех типов задач из хранилищ
+		try {
+			testNumber = super.clearAllDepos();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+
+		// удаление рабочего файла
+		defaultFile.delete();
+
+		// создание нового рабочего файла
+		defaultFile = new File(defaultFile.getPath());
+		try {
+			if (defaultFile.createNewFile()) {
+				System.out.println("Хранилища и рабочий файл очищены.");
+			} else {
+				System.out.println("Неудачная попытка очистить файл.");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return testNumber;
+	}
 }

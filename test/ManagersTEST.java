@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions;
 
 import main.java.model.Task;
 import main.java.utils.Managers;
-import main.java.model.TaskProgress;
 import main.java.interfaces.TaskManager;
 
 public class ManagersTEST {

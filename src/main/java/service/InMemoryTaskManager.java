@@ -15,11 +15,14 @@ import java.util.ArrayList;
 
 public class InMemoryTaskManager implements TaskManager {
 
-	protected static int id = 0;
+	// единый счетчик для всех типов задач
+	protected int id = 0;
 
 	private HistoryManager historyManager = new InMemoryHistoryManager();
-	protected static Map<Integer, Task> taskMap = new HashMap<>();
-	protected static Map<Integer, MainTask> mainTaskMap = new HashMap<>();
+	// хранилище задач
+	protected Map<Integer, Task> taskMap = new HashMap<>();
+	// хранилище главных задач
+	protected Map<Integer, MainTask> mainTaskMap = new HashMap<>();
 	// каждое хранилище с подзадачами хранится в своей главной задаче
 
 	/*
@@ -302,7 +305,7 @@ public class InMemoryTaskManager implements TaskManager {
 		historyManager.removeAll(subTaskMap);
 		historyManager.remove(maintaskId);
 		mainTaskMap.remove(maintaskId);
-		return 1;
+		return maintaskId;
 	}
 
 	/*
