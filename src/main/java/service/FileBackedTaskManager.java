@@ -17,7 +17,7 @@ import main.java.utils.ManagerSaveException;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
-	static FileBackedTaskManager fileBackedTaskManager;
+	final static FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
 
 	/*
 	 * рабочий файл по умолчанию
@@ -28,7 +28,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 	 * метод восстановления состояния класса из рабочего файла
 	 */
 	public static FileBackedTaskManager loadFromFile() {
-		fileBackedTaskManager = new FileBackedTaskManager();
 
 		// востановить рабочий файл в случае его отсутствия
 		if (!defaultFile.exists()) {
