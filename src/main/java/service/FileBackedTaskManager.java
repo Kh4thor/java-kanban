@@ -17,8 +17,6 @@ import main.java.utils.ManagerSaveException;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
-	final static FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
-
 	/*
 	 * рабочий файл по умолчанию
 	 */
@@ -29,17 +27,19 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 	 */
 	public static FileBackedTaskManager loadFromFile() {
 
+		final FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
+
 		// востановить рабочий файл в случае его отсутствия
 		if (!defaultFile.exists()) {
 			try {
-				restoreFile();
+				restoreFile(fileBackedTaskManager);
 			} catch (ManagerSaveException e) {
 				e.getMessage();
 			}
 		}
 		// считать файл и записать задачи в хранилища
 		try {
-			readFile();
+			readFile(fileBackedTaskManager);
 		} catch (ManagerSaveException e) {
 			e.getMessage();
 		}
@@ -57,7 +57,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 	/*
 	 * метод считывания файла и записи задач в хранилища
 	 */
-	private static void readFile() throws ManagerSaveException {
+	private static void readFile(FileBackedTaskManager fileBackedTaskManager) throws ManagerSaveException {
 		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(defaultFile))) {
 			while (bufferedReader.ready()) {
 
@@ -68,7 +68,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 				}
 
 				// конвертация задачи в строку
-				Task task = convertStringToTask(line);
+				Task task = convertStringToTask(line, fileBackedTaskManager);
 
 				// определение класса задачи
 				TaskType taskType = task.getType();
@@ -97,7 +97,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 	}
 
 	// метод востановления рабочего файла в случае его отсутствия
-	private static void restoreFile() throws ManagerSaveException {
+	private static void restoreFile(FileBackedTaskManager f) throws ManagerSaveException {
 
 		defaultFile = new File(defaultFile.getPath());
 
@@ -149,7 +149,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 	/*
 	 * метод конвертации строки в задачу
 	 */
-	private static Task convertStringToTask(String value) {
+	private static Task convertStringToTask(String value, FileBackedTaskManager fileBackedTaskManager) {
 		if (value != null && (!value.isEmpty() || !value.isBlank())) {
 			String[] values = value.split(",");
 
