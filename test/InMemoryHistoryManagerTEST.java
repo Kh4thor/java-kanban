@@ -25,9 +25,7 @@ public class InMemoryHistoryManagerTEST {
 	 */
 	@Test
 	void addToHistory_tasksNotNull_succes() throws Exception {
-		Task task1 = new Task("Task-1", "Discription", TaskProgress.NEW);
-//		Node<Task> node = hm.addToHistory(task1);
-
+		Task task1 = new Task("Task-1", "Description");
 		Assertions.assertNotNull(hm.addToHistory(task1));
 	}
 
@@ -42,73 +40,57 @@ public class InMemoryHistoryManagerTEST {
 	 */
 	@Test
 	void getHistory_elevenTasksAdded_succes() throws Exception {
-		Task task1 = new Task("Task-1", "Discription", TaskProgress.NEW);
-		Task task2 = new Task("Task-2", "Discription", TaskProgress.NEW);
-		Task task3 = new Task("Task-3", "Discription", TaskProgress.NEW);
-		Task task4 = new Task("Task-4", "Discription", TaskProgress.NEW);
-		Task task5 = new Task("Task-5", "Discription", TaskProgress.NEW);
-		tm.addTask(task1);
-		tm.addTask(task2);
-		tm.addTask(task3);
-		tm.addTask(task4);
-		tm.addTask(task5);
+		Task task1 = new Task(1, "Task-1", "Description", TaskProgress.NEW);
+		Task task2 = new Task(2, "Task-2", "Description", TaskProgress.NEW);
+		Task task3 = new Task(3, "Task-3", "Description", TaskProgress.NEW);
+		Task task4 = new Task(4, "Task-4", "Description", TaskProgress.NEW);
+		Task task5 = new Task(5, "Task-5", "Description", TaskProgress.NEW);
 
-		MainTask maintask1 = new MainTask("Maintask-1", "Discription");
-		MainTask maintask2 = new MainTask("Maintask-2", "Discription");
-		MainTask maintask3 = new MainTask("Maintask-3", "Discription");
-		int maintaskId1 = tm.addMainTask(maintask1);
-		int maintaskId2 = tm.addMainTask(maintask2);
-		int maintaskId3 = tm.addMainTask(maintask3);
+		hm.addToHistory(task1);
+		hm.addToHistory(task2);
+		hm.addToHistory(task3);
+		hm.addToHistory(task4);
+		hm.addToHistory(task5);
 
-		SubTask subtask1 = new SubTask("Subtask-1", "Discription", maintaskId1, TaskProgress.NEW);
-		SubTask subtask2 = new SubTask("Subtask-2", "Discription", maintaskId2, TaskProgress.NEW);
-		SubTask subtask3 = new SubTask("Subtask-3", "Discription", maintaskId3, TaskProgress.NEW);
-		tm.addSubTask(subtask1);
-		tm.addSubTask(subtask2);
-		tm.addSubTask(subtask3);
+		MainTask maintask1 = new MainTask(6, "Maintask-1", "Description");
+		MainTask maintask2 = new MainTask(7, "Maintask-2", "Description");
+		MainTask maintask3 = new MainTask(8, "Maintask-3", "Description");
 
-		tm.getTask(task1.getId());
-		tm.getTask(task2.getId());
-		tm.getTask(task3.getId());
-		tm.getTask(task4.getId());
-		tm.getTask(task5.getId());
-		tm.getMainTask(maintask1.getId());
-		tm.getMainTask(maintask2.getId());
-		tm.getMainTask(maintask3.getId());
-		tm.getSubTask(subtask1.getId());
-		tm.getSubTask(subtask2.getId());
-		tm.getSubTask(subtask3.getId());
+		hm.addToHistory(maintask1);
+		hm.addToHistory(maintask2);
+		hm.addToHistory(maintask3);
 
-		List<Task> arr = tm.getHistory();
+		SubTask subtask1 = new SubTask(9, "Subtask-1", "Description", 6, TaskProgress.NEW);
+		SubTask subtask2 = new SubTask(10, "Subtask-2", "Description", 7, TaskProgress.NEW);
+		SubTask subtask3 = new SubTask(11, "Subtask-3", "Description", 8, TaskProgress.NEW);
+
+		hm.addToHistory(subtask1);
+		hm.addToHistory(subtask2);
+		hm.addToHistory(subtask3);
+
+		List<Task> arr = hm.getHistory();
 		Assertions.assertEquals(11, arr.size());
 	}
 
 	@Test
 	void getHistory_sixDifferentTasksAdded_succes() throws Exception {
-		Task task1 = new Task("Task-1", "Discription", TaskProgress.NEW);
-		Task task2 = new Task("Task-2", "Discription", TaskProgress.NEW);
-		tm.addTask(task1);
-		tm.addTask(task2);
+		Task task1 = new Task(1, "Task-1", "Description", TaskProgress.NEW);
+		Task task2 = new Task(2, "Task-2", "Description", TaskProgress.NEW);
 
-		MainTask maintask1 = new MainTask("Maintask-1", "Discription");
-		MainTask maintask2 = new MainTask("Maintask-2", "Discription");
-		int maintaskId1 = tm.addMainTask(maintask1);
-		int maintaskId2 = tm.addMainTask(maintask2);
+		MainTask maintask1 = new MainTask(3, "Maintask-1", "Description");
+		MainTask maintask2 = new MainTask(4, "Maintask-2", "Description");
 
-		SubTask subtask1 = new SubTask("Subtask-1", "Discription", maintaskId1, TaskProgress.NEW);
-		SubTask subtask2 = new SubTask("Subtask-2", "Discription", maintaskId2, TaskProgress.NEW);
-		tm.addSubTask(subtask1);
-		tm.addSubTask(subtask2);
+		SubTask subtask1 = new SubTask(5, "Subtask-1", "Description", 3, TaskProgress.NEW);
+		SubTask subtask2 = new SubTask(6, "Subtask-2", "Description", 4, TaskProgress.NEW);
 
-		tm.getTask(task1.getId());
-		tm.getTask(task2.getId());
-		tm.getMainTask(maintask1.getId());
-		tm.getMainTask(maintask2.getId());
-		tm.getSubTask(subtask1.getId());
-		tm.getSubTask(subtask2.getId());
+		hm.addToHistory(task1);
+		hm.addToHistory(task2);
+		hm.addToHistory(maintask1);
+		hm.addToHistory(maintask2);
+		hm.addToHistory(subtask1);
+		hm.addToHistory(subtask2);
 
-		List<Task> arr = tm.getHistory();
-
+		List<Task> arr = hm.getHistory();
 		Assertions.assertTrue(arr.size() == 6);
 	}
 
@@ -118,93 +100,62 @@ public class InMemoryHistoryManagerTEST {
 	@Test
 	void addToHistory_removeOldDoubledTaskFromHistoryAndAddLast_succes() throws Exception {
 
-		Task task1 = new Task("Task-1", "Discription", TaskProgress.NEW);
-		tm.addTask(task1);
-
-		MainTask maintask1 = new MainTask("Maintask-1", "Discription");
-		tm.addMainTask(maintask1);
-
-		SubTask subtask1 = new SubTask("Subtask-1", "Discription", maintask1.getId(), TaskProgress.NEW);
-		tm.addSubTask(subtask1);
+		Task task1 = new Task(1, "Task-1", "Description", TaskProgress.NEW);
+		MainTask maintask1 = new MainTask(2, "Maintask-1", "Description");
+		SubTask subtask1 = new SubTask(3, "Subtask-1", "Description", 2, TaskProgress.NEW);
 
 		// дублирование задач в начале истории
-		tm.getTask(task1.getId());
-		tm.getTask(task1.getId());
+		hm.addToHistory(task1);
+		hm.addToHistory(task1);
 
 		// дублирование задач в середине истории
-		tm.getMainTask(maintask1.getId());
-		tm.getMainTask(maintask1.getId());
+		hm.addToHistory(maintask1);
+		hm.addToHistory(maintask1);
 
 		// дублирование задач в конце истории
-		tm.getSubTask(subtask1.getId());
-		tm.getSubTask(subtask1.getId());
+		hm.addToHistory(subtask1);
+		hm.addToHistory(subtask1);
+
+		/*
+		 * ПРЯМОЙ ПОРЯДОК
+		 */
 
 		// вывод параметов в прямом порядке
-		List<Task> arr = tm.getHistory();
+		List<Task> arr = hm.getHistory();
 
+		// проверка листа на содержание задач в прямом порядке
 		Assertions.assertTrue(arr.size() == 3);
 		Assertions.assertEquals(task1, arr.get(0));
 		Assertions.assertEquals(maintask1, arr.get(1));
 		Assertions.assertEquals(subtask1, arr.get(2));
 
+		// проверка удаления задач из списка обратного порядка
+		Assertions.assertEquals(1, hm.remove(task1.getId()));
+		Assertions.assertEquals(1, hm.remove(maintask1.getId()));
+		Assertions.assertEquals(1, hm.remove(subtask1.getId()));
+		// история задач очищена
+		Assertions.assertEquals(0, hm.getHistory().size());
+
+		/*
+		 * ОБРАТНЫЙ ПОРЯДОК
+		 */
+
 		// вывод параметов в обратном порядке
-		arr = tm.getHistoryReverse();
+		arr = hm.getHistoryReverse();
 
 		// проверка листа на содержание задач в обратном порядке
 		Assertions.assertEquals(3, arr.size());
 		Assertions.assertEquals(task1, arr.get(2));
 		Assertions.assertEquals(maintask1, arr.get(1));
 		Assertions.assertEquals(subtask1, arr.get(0));
-	}
 
-	/*
-	 * удаление задачи, главной задачи и подзадачи из истории и двусвязного списка
-	 */
-	@Test
-	void remove_deleteTaskFromHistory_succes() throws Exception {
-		Task task1 = new Task("Task-1", "Discription", TaskProgress.NEW);
-		tm.addTask(task1);
-		MainTask maintask1 = new MainTask("Maintask-1", "Discription");
-		tm.addMainTask(maintask1);
-		SubTask subtask1 = new SubTask("Subtask-1", "Discription", maintask1.getId(), TaskProgress.NEW);
-		tm.addSubTask(subtask1);
-
-		tm.getTask(task1.getId());
-		tm.getMainTask(maintask1.getId());
-		tm.getSubTask(subtask1.getId());
-
-		List<Task> arr = tm.getHistory();
-		Assertions.assertTrue(arr.size() == 3);
-
-		// история задач пуста
-		Assertions.assertEquals(0, hm.getHistory().size());
-
-		// добавление задач в историю
-
-		// дублирование в начале списка
-		hm.addToHistory(task1);
-		hm.addToHistory(task1);
-		// дублирование в середине списка
-		hm.addToHistory(maintask1);
-		hm.addToHistory(maintask1);
-
-		// дублирование в конце списка
-		hm.addToHistory(subtask1);
-		hm.addToHistory(subtask1);
-
-		// история задач заполенена, дубли не записаны
-		Assertions.assertEquals(3, hm.getHistory().size());
-		Assertions.assertEquals(task1, hm.getHistory().get(0));
-		Assertions.assertEquals(maintask1, hm.getHistory().get(1));
-		Assertions.assertEquals(subtask1, hm.getHistory().get(2));
-
-		// проверка удаления задачи
+		// проверка удаления задач из списка обратного порядка
 		Assertions.assertEquals(1, hm.remove(task1.getId()));
 		Assertions.assertEquals(1, hm.remove(maintask1.getId()));
 		Assertions.assertEquals(1, hm.remove(subtask1.getId()));
-
 		// история задач очищена
 		Assertions.assertEquals(0, hm.getHistory().size());
+
 	}
 
 	/*
@@ -214,12 +165,9 @@ public class InMemoryHistoryManagerTEST {
 	void removeAll_deleteTasksFromHistoryByHashMap_succes() {
 		Map<Integer, Task> map = new HashMap<>();
 
-		Task task1 = new Task("Task-1", "Discription", TaskProgress.NEW);
-		tm.addTask(task1);
-		MainTask maintask1 = new MainTask("Maintask-1", "Discription");
-		tm.addMainTask(maintask1);
-		SubTask subtask1 = new SubTask("Subtask-1", "Discription", maintask1.getId(), TaskProgress.NEW);
-		tm.addSubTask(subtask1);
+		Task task1 = new Task(1, "Task-1", "Description", TaskProgress.NEW);
+		MainTask maintask1 = new MainTask(2, "Maintask-1", "Description");
+		SubTask subtask1 = new SubTask(3, "Subtask-1", "Description", 2, TaskProgress.NEW);
 
 		// история задач пуста
 		Assertions.assertEquals(0, hm.getHistory().size());

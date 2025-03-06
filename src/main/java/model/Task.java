@@ -10,18 +10,32 @@ public class Task {
 	protected TaskProgress taskProgress;
 
 	// конструктор для создания задачи
-	public Task(String name, String discription, TaskProgress taskProgres) {
+	public Task(String name, String description) {
 		this.name = name;
-		this.description = discription;
+		this.description = description;
+		this.taskProgress = TaskProgress.NEW;
+	}
+
+	// конструктор для создания задачи
+	protected Task(String name, String description, TaskProgress taskProgres) {
+		this.name = name;
+		this.description = description;
 		this.taskProgress = taskProgres;
 	}
 
 	// конструктор для обновленной задачи
-	public Task(int id, String name, String discription, TaskProgress taskProgress) {
+	public Task(int id, String name, String description, TaskProgress taskProgress) {
 		this.id = id;
 		this.name = name;
 		this.taskProgress = taskProgress;
-		this.description = discription;
+		this.description = description;
+	}
+
+	/*
+	 * возврат типа класса через перечисление
+	 */
+	public TaskType getType() {
+		return TaskType.TASK;
 	}
 
 	public int getId() {
@@ -48,12 +62,12 @@ public class Task {
 		this.taskProgress = taskProgress;
 	}
 
-	public String getDiscription() {
+	public String getDescription() {
 		return description;
 	}
 
-	public void setDiscription(String discription) {
-		this.description = discription;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@Override
@@ -63,8 +77,8 @@ public class Task {
 
 	@Override
 	public String toString() {
-		return "[id=" + id + ", name=" + name + ", description=" + description + ", taskProgress=" + taskProgress
-				+ ", class=" + this.getClass().getSimpleName() + "]";
+		return "[id=" + id + ", class=" + this.getClass().getSimpleName() + ", name=" + name + ", taskProgress="
+				+ taskProgress + ", description=" + description + "]";
 	}
 
 	@Override

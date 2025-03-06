@@ -25,6 +25,13 @@ public class MainTask extends Task implements HasSubTask {
 	}
 
 	/*
+	 * возврат типа класса через перечисление
+	 */
+	public TaskType getType() {
+		return TaskType.MAINTASK;
+	}
+
+	/*
 	 * очистить хранилище подзадач
 	 */
 	@Override
