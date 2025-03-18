@@ -1,34 +1,49 @@
 package main.java.model;
 
 import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Optional;
 
 import main.java.interfaces.HasSubTask;
 
-public class MainTask extends Task implements HasSubTask {
+public class MainTask extends Task implements HasSubTask, Cloneable {
 
-	private Map<Integer, SubTask> subtaskMap = new HashMap<>();
+	private Map<Integer, SubTask> subTaskMap = new HashMap<>();
 
-	/*
-	 * конструктор для созлания главной задачи
-	 */
+	// конструктор для создания главной задачи
 	public MainTask(String name, String discription) {
-		super(name, discription, TaskProgress.NEW);
+		super(name, discription, TaskProgress.NEW, null, null);
 	}
 
-	/*
-	 * конструктор для обновления главной задачи
-	 */
+	// конструктор для обновления главной задачи
 	public MainTask(int id, String name, String discription) {
-		super(id, name, discription, TaskProgress.NEW);
+		super(id, name, discription, TaskProgress.NEW, null, null);
 	}
 
-	/*
-	 * возврат типа класса через перечисление
-	 */
+	// возврат типа класса через перечисление
 	public TaskType getType() {
 		return TaskType.MAINTASK;
+	}
+
+	
+	/*
+	 * 	получить время окончания выполнения задачи
+	 */
+	@Override
+	public LocalDateTime getEndTime() {
+		if (subTaskMap != null && !subTaskMap.isEmpty()) {
+
+			Optional<SubTask> optionalSubTask = subTaskMap.values().stream()
+					.max(Comparator.comparing(SubTask::getEndTime));
+
+			if (optionalSubTask.isPresent()) {
+				return optionalSubTask.get().getEndTime();
+			}
+		}
+		return null;
 	}
 
 	/*
@@ -36,8 +51,8 @@ public class MainTask extends Task implements HasSubTask {
 	 */
 	@Override
 	public void clearSubTaskMap() {
-		if (subtaskMap != null) {
-			subtaskMap.clear();
+		if (subTaskMap != null) {
+			subTaskMap.clear();
 		}
 	}
 
@@ -46,8 +61,8 @@ public class MainTask extends Task implements HasSubTask {
 	 */
 	@Override
 	public void removeSubTask(int subTaskId) {
-		if (subTaskId > 0 && subtaskMap.containsKey(subTaskId)) {
-			subtaskMap.remove(subTaskId);
+		if (subTaskId > 0 && subTaskMap.containsKey(subTaskId)) {
+			subTaskMap.remove(subTaskId);
 		}
 	}
 
@@ -56,7 +71,7 @@ public class MainTask extends Task implements HasSubTask {
 	 */
 	@Override
 	public void addSubTaskToDepo(SubTask subTask) {
-		subtaskMap.put(subTask.getId(), subTask);
+		subTaskMap.put(subTask.getId(), subTask);
 	}
 
 	/*
@@ -64,14 +79,14 @@ public class MainTask extends Task implements HasSubTask {
 	 */
 	@Override
 	public Map<Integer, SubTask> getSubTaskMap() {
-		return subtaskMap;
+		return subTaskMap;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + Objects.hash(subtaskMap);
+		result = prime * result + Objects.hash(subTaskMap);
 		return result;
 	}
 
@@ -87,5 +102,12 @@ public class MainTask extends Task implements HasSubTask {
 		return Objects.equals(description, other.description) && id == other.id && Objects.equals(name, other.name)
 				&& taskProgress == other.taskProgress;
 	}
-
+	
+	/*
+	 * метод клонирования главной задачи
+	 */
+	@Override
+	public MainTask clone () throws CloneNotSupportedException {
+		return (MainTask) super.clone();
+	}
 }

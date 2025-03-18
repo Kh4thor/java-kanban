@@ -11,6 +11,8 @@ import main.java.utils.Node;
 
 import java.util.List;
 import java.util.HashMap;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class InMemoryHistoryManager implements HistoryManager {
@@ -31,11 +33,13 @@ public class InMemoryHistoryManager implements HistoryManager {
 			String name = task.getName();
 			String discription = task.getDescription();
 			TaskProgress progress = task.getTaskProgress();
-			Task snapShotTask = task;
+			LocalDateTime startTime = task.getStartTime();
+			Duration duration = task.getDuration();
 
+			Task snapShotTask = task;
 			// сделать слепок объекта класса типа Task
 			if (task.getClass() == Task.class) {
-				snapShotTask = new Task(id, name, discription, progress);
+				snapShotTask = new Task(id, name, discription, progress, startTime, duration);
 
 				// сделать слепок объекта класса типа MainTask
 			} else if (task.getClass() == MainTask.class) {
@@ -44,7 +48,7 @@ public class InMemoryHistoryManager implements HistoryManager {
 				// сделать слепок объекта класса типа SubTask
 			} else if (task.getClass() == SubTask.class) {
 				int maintaskId = ((SubTask) task).getMaintaskId();
-				snapShotTask = new SubTask(id, name, discription, maintaskId, progress);
+				snapShotTask = new SubTask(id, name, discription, maintaskId, progress, startTime, duration);
 			}
 			// записать слепок в качестве последнего узла в двусвязный список
 			Node<Task> lastNode = linkLast(snapShotTask);
@@ -90,7 +94,6 @@ public class InMemoryHistoryManager implements HistoryManager {
 				arr.add(currentNode.data);
 				currentNode = currentNode.prev;
 			}
-
 		}
 		return arr;
 	}

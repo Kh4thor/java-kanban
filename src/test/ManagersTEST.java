@@ -1,6 +1,10 @@
 package test;
 
 import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.Assertions;
 
 import main.java.model.Task;
@@ -18,9 +22,9 @@ public class ManagersTEST {
 	@Test
 	void getDefaultHistory_equalsGetHistory_succes() throws Exception {
 		TaskManager tm = Managers.getDefault();
-		Task task1 = new Task("Task-1", "Discription");
-		tm.addTask(task1);
-		tm.getTask(task1.getId());
+		Task task1 = new Task("Task-1", "Discription", LocalDateTime.now(), Duration.ZERO);
+		int id = tm.addTask(task1);
+		tm.getTask(id);
 		Assertions.assertTrue(Managers.getDefaultHistory().contains(task1));
 	}
 }
