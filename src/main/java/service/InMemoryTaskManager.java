@@ -331,8 +331,7 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	public List<SubTask> getSubTasksList() {
 		if (mainTaskMap != null) {
 
-			return mainTaskMap.values().stream()
-					.map(mainTask -> mainTask.getSubTaskMap())
+			return mainTaskMap.values().stream().map(mainTask -> mainTask.getSubTaskMap())
 					.flatMap(subTaskMap -> subTaskMap.values().stream()).toList();
 		}
 		return new ArrayList<SubTask>();
@@ -580,8 +579,7 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 		Map<Integer, SubTask> subTaskMap = maintask.getSubTaskMap();
 
 		// суммарное время выполнения подзадач одной главной задачи
-		Long minutes = subTaskMap.values().stream()
-				.map(subtask -> subtask.getDuration().toMinutes())
+		Long minutes = subTaskMap.values().stream().map(subtask -> subtask.getDuration().toMinutes())
 				.mapToLong(Long::longValue).sum();
 
 		// присваивание главной задаче

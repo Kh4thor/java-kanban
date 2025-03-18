@@ -107,7 +107,7 @@ public class MainTask extends Task implements HasSubTask, Cloneable {
 	 * метод клонирования главной задачи
 	 */
 	@Override
-	public MainTask clone () throws CloneNotSupportedException {
+	public MainTask clone() throws CloneNotSupportedException {
 		return (MainTask) super.clone();
 	}
 }

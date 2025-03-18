@@ -46,11 +46,11 @@ public class Task implements Cloneable {
 		this.startTime = startTime;
 		this.duration = duration;
 	}
-	
+
 	public void setEndTime(LocalDateTime endTime) {
 		this.endTime = endTime;
 	}
-	
+
 	public Duration getDuration() {
 		return duration;
 	}
@@ -73,14 +73,14 @@ public class Task implements Cloneable {
 	public TaskType getType() {
 		return TaskType.TASK;
 	}
-	
+
 	/*
 	 * получить id задачи
 	 */
 	public int getId() {
 		return id;
 	}
-	
+
 	/*
 	 * установить id задачи
 	 */
@@ -94,7 +94,7 @@ public class Task implements Cloneable {
 	public String getName() {
 		return name;
 	}
-	
+
 	/*
 	 * установить имя задачи
 	 */
@@ -108,14 +108,14 @@ public class Task implements Cloneable {
 	public TaskProgress getTaskProgress() {
 		return taskProgress;
 	}
-	
+
 	/*
 	 * установить статус прогресса выполения задачи
 	 */
 	public void setTaskProgress(TaskProgress taskProgress) {
 		this.taskProgress = taskProgress;
 	}
-	
+
 	/*
 	 * получить описание задачи
 	 */
@@ -131,7 +131,7 @@ public class Task implements Cloneable {
 	}
 
 	/*
-	 *  получить время окончания выполнения задачи
+	 * получить время окончания выполнения задачи
 	 */
 	public LocalDateTime getEndTime() {
 		if (startTime != null) {
@@ -147,15 +147,9 @@ public class Task implements Cloneable {
 
 	@Override
 	public String toString() {
-		return "[id=" + id 
-				+ ", class=" + this.getClass().getSimpleName() 
-				+ ", name=" + name 
-				+ ", taskProgress="	+ taskProgress 
-				+ ", description=" + description
-				+ ", startTime=" + getStartTime()
-				+ ", duration=" + getDuration()
-				+ ", endTime=" + getEndTime()
-				+ "]";
+		return "[id=" + id + ", class=" + this.getClass().getSimpleName() + ", name=" + name + ", taskProgress="
+				+ taskProgress + ", description=" + description + ", startTime=" + getStartTime() + ", duration="
+				+ getDuration() + ", endTime=" + getEndTime() + "]";
 	}
 
 	@Override
@@ -167,16 +161,15 @@ public class Task implements Cloneable {
 		if (getClass() != obj.getClass())
 			return false;
 		Task other = (Task) obj;
-		return Objects.equals(description, other.description) 
-				&& id == other.id 
-				&& Objects.equals(name, other.name)
+		return Objects.equals(description, other.description) && id == other.id && Objects.equals(name, other.name)
 				&& taskProgress == other.taskProgress;
 	}
+
 	/*
 	 * метод клонирования задачи
 	 */
 	@Override
-	public Task clone () throws CloneNotSupportedException {
+	public Task clone() throws CloneNotSupportedException {
 		return (Task) super.clone();
 	}
 }

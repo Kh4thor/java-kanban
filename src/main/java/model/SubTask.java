@@ -21,7 +21,6 @@ public class SubTask extends Task implements Cloneable {
 		super(subtaskId, name, discription, taskProgress, startTime, duration);
 		this.mainTaskId = mainTaskId;
 	}
-	
 
 	/*
 	 * возврат типа класса через перечисление
@@ -57,24 +56,17 @@ public class SubTask extends Task implements Cloneable {
 
 	@Override
 	public String toString() {
-		return "[id=" + id
-				+ ", class=" + this.getClass().getSimpleName()
-				+ ", name=" + name
-				+ ", taskProgress=" + taskProgress
-				+ ", description=" + description
-				+ ", maintask_id=" + getMaintaskId()
-				+ ", startTime=" + getStartTime()
-				+ ", duration=" + getDuration()
-				+ ", endTime=" + getEndTime()
-				+ "]";
+		return "[id=" + id + ", class=" + this.getClass().getSimpleName() + ", name=" + name + ", taskProgress="
+				+ taskProgress + ", description=" + description + ", maintask_id=" + getMaintaskId() + ", startTime="
+				+ getStartTime() + ", duration=" + getDuration() + ", endTime=" + getEndTime() + "]";
 	}
-	
+
 	/*
 	 * метод клонирования подзадачи
 	 */
 	@Override
-	public SubTask clone () throws CloneNotSupportedException {
+	public SubTask clone() throws CloneNotSupportedException {
 		return (SubTask) super.clone();
 	}
-	
+
 }

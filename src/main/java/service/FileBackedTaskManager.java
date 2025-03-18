@@ -257,10 +257,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 		}
 
 		String duration = null;
-		if (task.getDuration()!= null) {
+		if (task.getDuration() != null) {
 			duration = Long.toString(task.getDuration().toMinutes());
 		}
-		
+
 		String endTime = null;
 		if (task.getEndTime() != null) {
 			endTime = task.getEndTime().toString();
