@@ -28,9 +28,8 @@ public class MainTask extends Task implements HasSubTask, Cloneable {
 		return TaskType.MAINTASK;
 	}
 
-	
 	/*
-	 * 	получить время окончания выполнения задачи
+	 * получить время окончания выполнения задачи
 	 */
 	@Override
 	public LocalDateTime getEndTime() {
@@ -102,7 +101,7 @@ public class MainTask extends Task implements HasSubTask, Cloneable {
 		return Objects.equals(description, other.description) && id == other.id && Objects.equals(name, other.name)
 				&& taskProgress == other.taskProgress;
 	}
-	
+
 	/*
 	 * метод клонирования главной задачи
 	 */
