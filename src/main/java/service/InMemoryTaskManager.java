@@ -179,19 +179,15 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	 */
 	@Override
 	public Integer updateMainTask(MainTask maintask) {
-		if (maintask != null && maintask.getId() > 0 && mainTaskMap.containsKey(maintask.getId())
-				&& !maintask.getName().isEmpty() && !maintask.getName().isBlank()) {
-
-			try {
-				// клонирование задачи
-				MainTask cloneMaintask = maintask.clone();
-
-				// обновить задачу в хранилище задач
-				mainTaskMap.put(cloneMaintask.getId(), cloneMaintask);
-
-				return cloneMaintask.getId();
-			} catch (CloneNotSupportedException e) {
-				e.printStackTrace();
+		if (maintask != null && mainTaskMap.containsKey(maintask.getId())) {
+			String newName = maintask.getName();
+			if (!newName.isEmpty() && !newName.isBlank()) {
+				int mainTaskId = maintask.getId();
+				MainTask mainTask = mainTaskMap.get(mainTaskId);
+				String newDescription = maintask.getDescription();
+				mainTask.setName(newName);
+				mainTask.setDescription(newDescription);
+				return maintask.getId();
 			}
 		}
 		return -1;
@@ -474,9 +470,6 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 				// удалить все подзадачи из списка приоритетных задач
 				prioritetSet.removeAll(getSubTasksList());
 
-				// удалить все главные задачи из списка приоритетных задач
-				prioritetSet.removeAll(getMainTasksList());
-
 			} else {
 				throw new Exception("prioritetSetNotFoundException");
 			}
@@ -494,6 +487,10 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	@Override
 	public Integer deleteAllSubTasks() throws Exception {
 		if (mainTaskMap != null) {
+
+			// удалить все подзадачи из списка приоритетных задач
+			prioritetSet.removeAll(getSubTasksList());
+
 			for (int mainTaskId : mainTaskMap.keySet()) {
 
 				// поиск главной задачи
@@ -501,9 +498,6 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 
 				// поиск хранилища подзадач главной задачи
 				Map<Integer, SubTask> subTaskMap = mainTask.getSubTaskMap();
-
-				// удалить все подзадачи из списка приоритетных задач
-				prioritetSet.removeAll(getSubTasksList());
 
 				// удалить из истории все подзадачи
 				historyManager.removeAll(subTaskMap);
@@ -524,6 +518,12 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	 */
 	@Override
 	public Integer clearAllDepos() throws Exception {
+
+		// удалить все задачи из списка приоритетных задач
+		prioritetSet.removeAll(getTasksList());
+
+		// удалить все подзадачи из списка приоритетных задач
+		prioritetSet.removeAll(getSubTasksList());
 
 		// очистить хранилище задач
 		taskMap.clear();
@@ -581,7 +581,7 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	 * проверка на пересечение входящей задачи с задачами из приоритетного списка
 	 */
 	protected boolean isValidate(Task task) {
-		if (task.getStartTime() != null && task.getDuration() != null) {
+		if (task.getId() > 0 && task.getStartTime() != null && task.getDuration() != null) {
 			return (prioritetSet.stream().noneMatch(t -> isTasksIntersectInTime(t, task)));
 		}
 		return false;
@@ -645,6 +645,8 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 		if (optionalSubTask.isPresent()) {
 			LocalDateTime localDateTime = optionalSubTask.get().getStartTime();
 			maintask.setStartTime(localDateTime);
+		} else {
+			maintask.setStartTime(null);
 		}
 	}
 
