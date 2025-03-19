@@ -80,7 +80,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 					// проверка задачи на валидатцию добавления в список приоритетных задач
 					if (fileBackedTaskManager.isValidate(task)) {
-						fileBackedTaskManager.prioritetMap.add(task);
+						fileBackedTaskManager.prioritetSet.add(task);
 					}
 					fileBackedTaskManager.taskMap.put(task.getId(), task);
 
@@ -95,7 +95,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 					// проверка задачи на валидатцию добавления в список приоритетных задач
 					if (fileBackedTaskManager.isValidate(task)) {
-						fileBackedTaskManager.prioritetMap.add(task);
+						fileBackedTaskManager.prioritetSet.add(task);
 					}
 					// поиск главной задачи подзади и запись подзадачи в хранилище
 					if (fileBackedTaskManager.mainTaskMap.containsKey(mainTaskId)) {
@@ -214,7 +214,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 				// создание задачи
 				if (type.equals("TASK")) {
 					Task task = new Task(id, name, discription, taskProgress, startTime, duration);
-					task.setEndTime(endTime);
 					return task;
 
 					// создание главной задачи
@@ -229,7 +228,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 					// создание подзадачи
 				} else if (type.equals("SUBTASK")) {
 					SubTask subTask = new SubTask(id, name, discription, mainTaskid, taskProgress, startTime, duration);
-					subTask.setEndTime(endTime);
 					return subTask;
 				}
 			} catch (IllegalArgumentException e) {

@@ -57,8 +57,13 @@ public class FileBackedTaskManagerTEST {
 
 		// запись новой главной задачи в хранилище и тестовый файл
 		MainTask maintask1 = new MainTask("MainTask-1", "MainTask1-description");
+
+		System.out.println(maintask1);
+
 		int idmaintask1 = fbtm.addMainTask(maintask1);
 		maintask1 = fbtm.getMainTask(idmaintask1).get();
+
+		System.out.println(maintask1);
 
 		Assertions.assertTrue(fbtm.getMainTasksList().contains(maintask1));
 
@@ -143,16 +148,18 @@ public class FileBackedTaskManagerTEST {
 		SubTask subtask3 = new SubTask("SubTask-3", "SubTask3-description", idmaintask2, localDateTime, duration);
 		int idsubtask3 = fbtm.addSubTask(subtask3);
 		subtask3 = fbtm.getSubTask(idsubtask3).get();
-		
-		// время начала выполнения главной задачи равно началу выполнения самой ранней подзадачи
-		Assertions.assertTrue(maintask2.getStartTime()==subtask2.getStartTime());
-		
-		// время окончания выполнения главной задачи равно началу выполнения самой ранней подзадачи
+
+		// время начала выполнения главной задачи равно началу выполнения самой ранней
+		// подзадачи
+		Assertions.assertTrue(maintask2.getStartTime() == subtask2.getStartTime());
+
+		// время окончания выполнения главной задачи равно началу выполнения самой
+		// ранней подзадачи
 		Assertions.assertEquals(maintask2.getEndTime(), subtask3.getEndTime());
-		
-		// продолжительность выполнения главной задачи равно продолжительности выполнения всех подзадач
+
+		// продолжительность выполнения главной задачи равно продолжительности
+		// выполнения всех подзадач
 		Assertions.assertEquals(maintask2.getDuration(), subtask2.getDuration().plus(subtask3.getDuration()));
-		
 
 		// новая задача, главная задача и подзадачи добавлены
 		Assertions.assertTrue(fbtm.getTasksList().contains(task1));

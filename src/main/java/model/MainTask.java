@@ -2,14 +2,14 @@ package main.java.model;
 
 import java.util.Map;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.Optional;
 
 import main.java.interfaces.HasSubTask;
 
 public class MainTask extends Task implements HasSubTask, Cloneable {
+
+	protected LocalDateTime endTime; // время окончания выполнения задачи
 
 	private Map<Integer, SubTask> subTaskMap = new HashMap<>();
 
@@ -28,21 +28,17 @@ public class MainTask extends Task implements HasSubTask, Cloneable {
 		return TaskType.MAINTASK;
 	}
 
+	// установить время окончания выполнения главной задачи
+	public void setEndTime(LocalDateTime endTime) {
+		this.endTime = endTime;
+	}
+
 	/*
-	 * получить время окончания выполнения задачи
+	 * получить время окончания выполнения главной задачи
 	 */
 	@Override
 	public LocalDateTime getEndTime() {
-		if (subTaskMap != null && !subTaskMap.isEmpty()) {
-
-			Optional<SubTask> optionalSubTask = subTaskMap.values().stream()
-					.max(Comparator.comparing(SubTask::getEndTime));
-
-			if (optionalSubTask.isPresent()) {
-				return optionalSubTask.get().getEndTime();
-			}
-		}
-		return null;
+		return endTime;
 	}
 
 	/*

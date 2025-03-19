@@ -12,7 +12,6 @@ public class Task implements Cloneable {
 	protected TaskProgress taskProgress; // статус выполнения задачи
 	protected LocalDateTime startTime; // время начала выполнения задачи
 	protected Duration duration; // продолжительность выполнения задачи
-	protected LocalDateTime endTime; // время окончания выполнения задачи
 
 	// конструктор для создания задачи с указанием начала и времени выполнения
 	// задачи
@@ -22,6 +21,14 @@ public class Task implements Cloneable {
 		this.taskProgress = TaskProgress.NEW;
 		this.startTime = startTime;
 		this.duration = duration;
+	}
+
+	// конструктор для создания задачи без указания начала и времени выполнения
+	// задачи
+	public Task(String name, String description) {
+		this.name = name;
+		this.description = description;
+		this.taskProgress = TaskProgress.NEW;
 	}
 
 	// конструктор для обновления задачи с указанием начала и времени выполнения
@@ -36,6 +43,15 @@ public class Task implements Cloneable {
 		this.duration = duration;
 	}
 
+	// конструктор для обновления задачи без указания начала и времени выполнения
+	// задачи
+	public Task(int id, String name, String description, TaskProgress taskProgress) {
+		this.id = id;
+		this.name = name;
+		this.taskProgress = taskProgress;
+		this.description = description;
+	}
+
 	// конструктор для обновления задачи с указанием начала и времени выполнения
 	// задачи для MainTask
 	protected Task(String name, String description, TaskProgress taskProgress, LocalDateTime startTime,
@@ -45,10 +61,6 @@ public class Task implements Cloneable {
 		this.description = description;
 		this.startTime = startTime;
 		this.duration = duration;
-	}
-
-	public void setEndTime(LocalDateTime endTime) {
-		this.endTime = endTime;
 	}
 
 	public Duration getDuration() {
