@@ -380,7 +380,7 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 
 			// удалить из списка приоритеных задач все подзадачи главной задачи
 			prioritetSet.removeAll(getSubTaskListByMainTask(maintaskId));
-			
+
 			// удалить главную задачу из хранилища главных задач
 			MainTask mainTaskToRemove = mainTaskMap.remove(maintaskId);
 
