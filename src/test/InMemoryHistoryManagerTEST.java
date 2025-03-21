@@ -62,9 +62,12 @@ public class InMemoryHistoryManagerTEST {
 		hm.addToHistory(maintask2);
 		hm.addToHistory(maintask3);
 
-		SubTask subtask1 = new SubTask(9, "Subtask-1", "Description", 6, TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
-		SubTask subtask2 = new SubTask(10, "Subtask-2", "Description", 7, TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
-		SubTask subtask3 = new SubTask(11, "Subtask-3", "Description", 8, TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
+		SubTask subtask1 = new SubTask(9, "Subtask-1", "Description", 6, TaskProgress.NEW, LocalDateTime.now(),
+				Duration.ZERO);
+		SubTask subtask2 = new SubTask(10, "Subtask-2", "Description", 7, TaskProgress.NEW, LocalDateTime.now(),
+				Duration.ZERO);
+		SubTask subtask3 = new SubTask(11, "Subtask-3", "Description", 8, TaskProgress.NEW, LocalDateTime.now(),
+				Duration.ZERO);
 
 		hm.addToHistory(subtask1);
 		hm.addToHistory(subtask2);
@@ -82,8 +85,10 @@ public class InMemoryHistoryManagerTEST {
 		MainTask maintask1 = new MainTask(3, "Maintask-1", "Description");
 		MainTask maintask2 = new MainTask(4, "Maintask-2", "Description");
 
-		SubTask subtask1 = new SubTask(5, "Subtask-1", "Description", 3, TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
-		SubTask subtask2 = new SubTask(6, "Subtask-2", "Description", 4, TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
+		SubTask subtask1 = new SubTask(5, "Subtask-1", "Description", 3, TaskProgress.NEW, LocalDateTime.now(),
+				Duration.ZERO);
+		SubTask subtask2 = new SubTask(6, "Subtask-2", "Description", 4, TaskProgress.NEW, LocalDateTime.now(),
+				Duration.ZERO);
 
 		hm.addToHistory(task1);
 		hm.addToHistory(task2);
@@ -104,7 +109,8 @@ public class InMemoryHistoryManagerTEST {
 
 		Task task1 = new Task(1, "Task-1", "Description", TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
 		MainTask maintask1 = new MainTask(2, "Maintask-1", "Description");
-		SubTask subtask1 = new SubTask(3, "Subtask-1", "Description", 2, TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
+		SubTask subtask1 = new SubTask(3, "Subtask-1", "Description", 2, TaskProgress.NEW, LocalDateTime.now(),
+				Duration.ZERO);
 
 		// дублирование задач в начале истории
 		hm.addToHistory(task1);
@@ -162,7 +168,8 @@ public class InMemoryHistoryManagerTEST {
 
 		Task task1 = new Task(1, "Task-1", "Description", TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
 		MainTask maintask1 = new MainTask(2, "Maintask-1", "Description");
-		SubTask subtask1 = new SubTask(3, "Subtask-1", "Description", 2, TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
+		SubTask subtask1 = new SubTask(3, "Subtask-1", "Description", 2, TaskProgress.NEW, LocalDateTime.now(),
+				Duration.ZERO);
 
 		// история задач пуста
 		Assertions.assertEquals(0, hm.getHistory().size());

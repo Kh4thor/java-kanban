@@ -79,7 +79,7 @@ class InMemoryTaskManagerTEST {
 		MainTask task = new MainTask("MainTask", "description");
 		int taskId = tm.addMainTask(task);
 		task = tm.getMainTask(taskId).get();
-		
+
 		Assertions.assertEquals(taskId, task.getId());
 	}
 
@@ -487,7 +487,7 @@ class InMemoryTaskManagerTEST {
 		int maintaskId = tm.addMainTask(maintask);
 		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		int id = tm.addSubTask(subtask);
-		
+
 		Assertions.assertEquals(2, tm.deleteSubTaskById(id));
 	}
 
@@ -621,7 +621,7 @@ class InMemoryTaskManagerTEST {
 
 		SubTask task3 = new SubTask("SubTask-1", "Description", mainTask_id, LocalDateTime.now(), Duration.ZERO);
 		int subtask_id = tm.addSubTask(task3);
-		
+
 		// дублирование задач в начале истории
 		tm.getTask(task_id);
 		Task getTask2 = tm.getTask(task_id).get();
@@ -630,11 +630,10 @@ class InMemoryTaskManagerTEST {
 		tm.getMainTask(mainTask_id);
 		Task getMainTask2 = tm.getMainTask(mainTask_id).get();
 
-		
 		// дублирование задач в конце истории
 		tm.getSubTask(subtask_id);
 		Task getSubtask2 = tm.getSubTask(subtask_id).get();
-		
+
 		Assertions.assertEquals(3, tm.getHistory().size());
 		Assertions.assertEquals(getTask2, tm.getHistory().get(0));
 		Assertions.assertEquals(getMainTask2, tm.getHistory().get(1));
