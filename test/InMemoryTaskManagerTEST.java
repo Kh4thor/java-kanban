@@ -3,6 +3,9 @@ package test;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.Optional;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 
 import main.java.model.Task;
@@ -10,25 +13,22 @@ import main.java.model.SubTask;
 import main.java.model.MainTask;
 import main.java.model.TaskProgress;
 import main.java.interfaces.TaskManager;
-import main.java.interfaces.HistoryManager;
 import main.java.service.InMemoryTaskManager;
-import main.java.service.InMemoryHistoryManager;
 
 import org.junit.jupiter.api.Assertions;
 
 class InMemoryTaskManagerTEST {
 
 	TaskManager tm = new InMemoryTaskManager();
-	HistoryManager hm = new InMemoryHistoryManager();
 
 	/*
 	 * добавить задачу
 	 */
 	@Test
 	void addTask_notNullTask_success() {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		int task_id = tm.addTask(task);
-		task = tm.getTask(task_id);
+		task = tm.getTask(task_id).get();
 		Assertions.assertEquals(task_id, task.getId());
 	}
 
@@ -39,28 +39,29 @@ class InMemoryTaskManagerTEST {
 
 	@Test
 	void addTask_nameIsEmpty_failure() {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		task.setName("");
 		Assertions.assertTrue(tm.addTask(task) == -1);
 	}
 
 	@Test
 	void addTask_nameIsBlank_failure() {
-		Task task = new Task("   ", "Description");
+		Task task = new Task("   ", "Description", LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.addTask(task) == -1);
 	}
 
 	@Test
 	void addTask_taskIdIsMoreThanZero_failure() {
-		Task task = new Task(1, "Task", "Description", TaskProgress.NEW);
+		Task task = new Task(1, "Task", "Description", TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.addTask(task) == -1);
 	}
 
 	@Test
 	void addTask_taskMapContainsKeyTaskId_failure() {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		int id = tm.addTask(task);
-		Task newTask = new Task(++id, "newTask", "newDescription", TaskProgress.NEW);
+		Task newTask = new Task(++id, "newTask", "newDescription", TaskProgress.NEW, LocalDateTime.now(),
+				Duration.ZERO);
 		Assertions.assertTrue(tm.addTask(newTask) == -1);
 	}
 
@@ -77,7 +78,8 @@ class InMemoryTaskManagerTEST {
 	void addMainTask_maintaskIsntNull_succes() {
 		MainTask task = new MainTask("MainTask", "description");
 		int taskId = tm.addMainTask(task);
-		task = tm.getMainTask(taskId);
+		task = tm.getMainTask(taskId).get();
+
 		Assertions.assertEquals(taskId, task.getId());
 	}
 
@@ -121,7 +123,7 @@ class InMemoryTaskManagerTEST {
 	void addSubTask_notNullSubTask_success() throws Exception {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertEquals(maintaskId, subtask.getMaintaskId());
 	}
 
@@ -134,7 +136,7 @@ class InMemoryTaskManagerTEST {
 	void addSubTask_nameIsEmpty_failure() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("", "Description", maintaskId);
+		SubTask subtask = new SubTask("", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.addSubTask(subtask) == -1);
 	}
 
@@ -142,7 +144,7 @@ class InMemoryTaskManagerTEST {
 	void addSubTask_nameIsBlank_failure() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("   ", "Description", maintaskId);
+		SubTask subtask = new SubTask("   ", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.addSubTask(subtask) == -1);
 	}
 
@@ -150,7 +152,7 @@ class InMemoryTaskManagerTEST {
 	void addSubTask_subtaskIdIsMoreThanZero_failure() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		subtask.setId(1);
 		Assertions.assertTrue(tm.addSubTask(subtask) == -1);
 	}
@@ -159,7 +161,8 @@ class InMemoryTaskManagerTEST {
 	void addSubTask_subtaskMapContainsSubTaskId_failure() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask(1, "SubTask", "Description", maintaskId, TaskProgress.NEW);
+		SubTask subtask = new SubTask(1, "SubTask", "Description", maintaskId, TaskProgress.NEW, LocalDateTime.now(),
+				Duration.ZERO);
 		Assertions.assertTrue(tm.addSubTask(subtask) == -1);
 	}
 
@@ -168,9 +171,9 @@ class InMemoryTaskManagerTEST {
 	 */
 	@Test
 	void updateTask_notNullTask_succes() {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
-		Task newTask = new Task(1, "newTask", "newDescription", TaskProgress.NEW);
+		Task newTask = new Task(1, "newTask", "newDescription", TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.updateTask(newTask) == newTask.getId());
 	}
 
@@ -181,32 +184,32 @@ class InMemoryTaskManagerTEST {
 
 	@Test
 	void updateTask_nameIsEmpty_failure() {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
-		Task newTask = new Task(1, "", "newDescription", TaskProgress.NEW);
+		Task newTask = new Task(1, "", "newDescription", TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.updateTask(newTask) == -1);
 	}
 
 	@Test
 	void updateTask_nameIsBlank_failure() {
-		Task newTask = new Task(1, "   ", "Description", TaskProgress.NEW);
+		Task newTask = new Task(1, "   ", "Description", TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.updateTask(newTask) == -1);
 	}
 
 	@Test
 	void updateTask_taskIdIsEqualsZero_failure() {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
-		Task newTask = new Task(0, "Task", "newDescription", TaskProgress.NEW);
+		Task newTask = new Task(0, "Task", "newDescription", TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.updateTask(newTask) == -1);
 	}
 
 	@Test
 	void updateTask_taskMapDontContainsTaskId_failure() throws Exception {
 		tm.clearAllDepos();
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
-		Task newTask = new Task(2, "Task", "newDescription", TaskProgress.NEW);
+		Task newTask = new Task(2, "Task", "newDescription", TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.updateTask(newTask) == -1);
 	}
 
@@ -253,9 +256,9 @@ class InMemoryTaskManagerTEST {
 
 	@Test
 	void updateMainTask_maintaskMapDontContainsTaskId_failure() {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
-		Task newTask = new Task(0, "Task", "newDescription", TaskProgress.NEW);
+		Task newTask = new Task(0, "Task", "newDescription", TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.updateTask(newTask) == -1);
 	}
 
@@ -266,9 +269,10 @@ class InMemoryTaskManagerTEST {
 	void updateSubTask_notNullSubTask_succes() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		int subtaskId = tm.addSubTask(subtask);
-		SubTask newSubTask = new SubTask(subtaskId, "newSubTask", "newDescription", maintaskId, TaskProgress.NEW);
+		SubTask newSubTask = new SubTask(subtaskId, "newSubTask", "newDescription", maintaskId, TaskProgress.NEW,
+				LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.updateSubTask(newSubTask) == subtaskId);
 	}
 
@@ -276,7 +280,7 @@ class InMemoryTaskManagerTEST {
 	void updateSubTask_nullSubTask_failure() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		tm.addSubTask(subtask);
 		SubTask newSubTask = null;
 		Assertions.assertTrue(tm.updateSubTask(newSubTask) == -1);
@@ -286,9 +290,10 @@ class InMemoryTaskManagerTEST {
 	void updateSubTask_nameIsEmpty_failure() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		int subtaskId = tm.addSubTask(subtask);
-		SubTask newSubTask = new SubTask(subtaskId, "", "newDescription", maintaskId, TaskProgress.NEW);
+		SubTask newSubTask = new SubTask(subtaskId, "", "newDescription", maintaskId, TaskProgress.NEW,
+				LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.updateSubTask(newSubTask) == -1);
 	}
 
@@ -296,18 +301,20 @@ class InMemoryTaskManagerTEST {
 	void updateSubTask_nameIsBlank_failure() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		int subtaskId = tm.addSubTask(subtask);
-		SubTask newSubTask = new SubTask(subtaskId, "   ", "newDescription", maintaskId, TaskProgress.NEW);
+		SubTask newSubTask = new SubTask(subtaskId, "   ", "newDescription", maintaskId, TaskProgress.NEW,
+				LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.updateSubTask(newSubTask) == -1);
 	}
 
 	void updateSubTask_subtaskIdIsEqualsZero_succes() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		tm.addSubTask(subtask);
-		SubTask newSubTask = new SubTask(0, "newSubTask", "newDescription", maintaskId, TaskProgress.NEW);
+		SubTask newSubTask = new SubTask(0, "newSubTask", "newDescription", maintaskId, TaskProgress.NEW,
+				LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.updateSubTask(newSubTask) == -1);
 	}
 
@@ -315,9 +322,10 @@ class InMemoryTaskManagerTEST {
 	void updateSubTask_subtaskMapDontContainsSubTaskId_failure() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		int subtaskId = tm.addSubTask(subtask);
-		SubTask newSubTask = new SubTask(++subtaskId, "newSubTask", "newDescription", maintaskId, TaskProgress.NEW);
+		SubTask newSubTask = new SubTask(++subtaskId, "newSubTask", "newDescription", maintaskId, TaskProgress.NEW,
+				LocalDateTime.now(), Duration.ZERO);
 		Assertions.assertTrue(tm.updateSubTask(newSubTask) == -1);
 	}
 
@@ -326,15 +334,15 @@ class InMemoryTaskManagerTEST {
 	 */
 	@Test
 	void getTask_taskMapContainsTaskId_succes() throws Exception {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
-		Assertions.assertTrue(tm.getTask(1).getId() == 1);
+		Assertions.assertTrue(tm.getTask(1).get().getId() == 1);
 	}
 
 	@Test
 	void getTask_taskMapDontContainsTaskId_failure() {
-		Task task = new Task(-1, "null", "from_getTask", TaskProgress.DONE);
-		Assertions.assertEquals(task, tm.getTask(1));
+		new Task(-1, "null", "from_getTask", TaskProgress.DONE, LocalDateTime.now(), Duration.ZERO);
+		Assertions.assertEquals(Optional.empty(), tm.getTask(1));
 	}
 
 	/*
@@ -344,14 +352,14 @@ class InMemoryTaskManagerTEST {
 	void getMainTask_maintaskMapContainsTaskId_succes() throws Exception {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int id = tm.addMainTask(maintask);
-		maintask = tm.getMainTask(id);
+		maintask = tm.getMainTask(id).get();
 		Assertions.assertTrue(maintask.getId() == id);
 	}
 
 	@Test
 	void getMainTask_maintaskMapDontContainsTaskId_failure() {
-		Task task = new MainTask(-1, "null", "from_getMainTask");
-		Assertions.assertEquals(task, tm.getMainTask(0));
+		new MainTask(-1, "null", "from_getMainTask");
+		Assertions.assertEquals(Optional.empty(), tm.getMainTask(1));
 	}
 
 	/*
@@ -361,15 +369,15 @@ class InMemoryTaskManagerTEST {
 	void getSubTask_subtaskMapContainsTaskId_succes() throws Exception {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		int subtaskId = tm.addSubTask(subtask);
-		Assertions.assertTrue(tm.getSubTask(subtaskId).getId() == subtaskId);
+		Assertions.assertTrue(tm.getSubTask(subtaskId).get().getId() == subtaskId);
 	}
 
 	@Test
 	void getSubTask_subtasMapkDoNotContainsTaskId_failure() {
-		Task task = new SubTask(-1, "null", "from_getSubTask", -1, TaskProgress.NEW);
-		Assertions.assertEquals(task, tm.getSubTask(1));
+		new SubTask(-1, "null", "from_getSubTask", -1, TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
+		Assertions.assertEquals(Optional.empty(), tm.getSubTask(1));
 	}
 
 	/*
@@ -377,8 +385,8 @@ class InMemoryTaskManagerTEST {
 	 */
 	@Test
 	void getTasksList_tasksListIsNotEmpty_success() throws Exception {
-		Task task = new Task("Task", "Description");
-		Task task2 = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
+		Task task2 = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
 		tm.addTask(task2);
 		Assertions.assertTrue(!tm.getTasksList().isEmpty());
@@ -414,7 +422,7 @@ class InMemoryTaskManagerTEST {
 	void getSubTasksList_subtaskMapIsNotEmpty_succes() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		tm.addSubTask(subtask);
 		Assertions.assertTrue(!tm.getSubTasksList().isEmpty());
 	}
@@ -431,7 +439,7 @@ class InMemoryTaskManagerTEST {
 	void getSubTasksListByMainTask_subtaskMapIsNotEmpty_succes() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		tm.addSubTask(subtask);
 		Assertions.assertTrue(!tm.getSubTaskListByMainTask(maintaskId).isEmpty());
 	}
@@ -441,14 +449,14 @@ class InMemoryTaskManagerTEST {
 	 */
 	@Test
 	void deleteTaskById_taskMapContainsTaskId_succes() {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
 		Assertions.assertTrue(tm.deleteTaskById(1) == 1);
 	}
 
 	@Test
 	void deleteTaskById_taskMapContainsTaskId_failure() {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
 		Assertions.assertTrue(tm.deleteTaskById(1) == 1);
 	}
@@ -477,9 +485,10 @@ class InMemoryTaskManagerTEST {
 	void deleteSubTaskById_subtaskMapContainsSubTaskId() {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
-		tm.addSubTask(subtask);
-		Assertions.assertEquals(2, tm.deleteSubTaskById(2));
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
+		int id = tm.addSubTask(subtask);
+
+		Assertions.assertEquals(2, tm.deleteSubTaskById(id));
 	}
 
 	@Test
@@ -493,7 +502,7 @@ class InMemoryTaskManagerTEST {
 	 */
 	@Test
 	void deleteAllTasks_taskMapIsNotNull_success() throws Exception {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
 		Assertions.assertTrue(tm.deleteAllTasks() == 1);
 	}
@@ -515,7 +524,7 @@ class InMemoryTaskManagerTEST {
 	void deleteAllSubTasks_subtaskMapIsNotNull_succes() throws Exception {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		tm.addSubTask(subtask);
 		Assertions.assertTrue(tm.deleteAllMainTasks() == 1);
 	}
@@ -533,31 +542,31 @@ class InMemoryTaskManagerTEST {
 	 */
 	@Test
 	void checkTaskProgress_changeTaskProgressFromNEWToIN_PRPGRESS_succes() throws Exception {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
-		Task newTask = new Task(1, "Task", "Description", TaskProgress.IN_PROGRESS);
+		Task newTask = new Task(1, "Task", "Description", TaskProgress.IN_PROGRESS, LocalDateTime.now(), Duration.ZERO);
 		tm.updateTask(newTask);
-		Assertions.assertTrue(tm.getTask(1).getTaskProgress() == TaskProgress.IN_PROGRESS);
+		Assertions.assertTrue(tm.getTask(1).get().getTaskProgress() == TaskProgress.IN_PROGRESS);
 	}
 
 	@Test
 	void checkTaskProgress_changeTaskProgressFromNEWToDone_succes() throws Exception {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
-		Task newTask = new Task(1, "Task", "Description", TaskProgress.DONE);
+		Task newTask = new Task(1, "Task", "Description", TaskProgress.DONE, LocalDateTime.now(), Duration.ZERO);
 		tm.updateTask(newTask);
-		Assertions.assertTrue(tm.getTask(1).getTaskProgress() == TaskProgress.DONE);
+		Assertions.assertTrue(tm.getTask(1).get().getTaskProgress() == TaskProgress.DONE);
 	}
 
 	@Test
 	void checkTaskProgress_changeTaskprogressFromDONEToNEW_succes() throws Exception {
-		Task task = new Task("Task", "Description");
+		Task task = new Task("Task", "Description", LocalDateTime.now(), Duration.ZERO);
 		tm.addTask(task);
-		Task newTask = new Task(1, "Task", "Description", TaskProgress.DONE);
+		Task newTask = new Task(1, "Task", "Description", TaskProgress.DONE, LocalDateTime.now(), Duration.ZERO);
 		tm.updateTask(newTask);
-		Task newTask2 = new Task(1, "Task", "Description", TaskProgress.NEW);
+		Task newTask2 = new Task(1, "Task", "Description", TaskProgress.NEW, LocalDateTime.now(), Duration.ZERO);
 		tm.updateTask(newTask2);
-		Assertions.assertTrue(tm.getTask(1).getTaskProgress() == TaskProgress.NEW);
+		Assertions.assertTrue(tm.getTask(1).get().getTaskProgress() == TaskProgress.NEW);
 	}
 
 	/*
@@ -567,60 +576,63 @@ class InMemoryTaskManagerTEST {
 	void checkTaskProgress_changeMainTaskprogressFromNEWToINPROGRESS_succes() throws Exception {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		int subtaskId = tm.addSubTask(subtask);
 		SubTask newSubTask = new SubTask(subtaskId, "newSubTask", "newDescription", maintaskId,
-				TaskProgress.IN_PROGRESS);
+				TaskProgress.IN_PROGRESS, LocalDateTime.now(), Duration.ZERO);
 		tm.updateSubTask(newSubTask);
-		Assertions.assertTrue(tm.getMainTask(maintaskId).getTaskProgress() == TaskProgress.IN_PROGRESS);
+		Assertions.assertTrue(tm.getMainTask(maintaskId).get().getTaskProgress() == TaskProgress.IN_PROGRESS);
 	}
 
 	@Test
 	void checkTaskProgress_changeMainTaskprogressFromNEWToDONE_succes() throws Exception {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		int subtaskId = tm.addSubTask(subtask);
-		SubTask newSubTask = new SubTask(subtaskId, "newSubTask", "newDescription", maintaskId, TaskProgress.DONE);
+		SubTask newSubTask = new SubTask(subtaskId, "newSubTask", "newDescription", maintaskId, TaskProgress.DONE,
+				LocalDateTime.now(), Duration.ZERO);
 		tm.updateSubTask(newSubTask);
-		Assertions.assertEquals(TaskProgress.DONE, tm.getMainTask(maintaskId).getTaskProgress());
+		Assertions.assertEquals(TaskProgress.DONE, tm.getMainTask(maintaskId).get().getTaskProgress());
 	}
 
 	@Test
 	void checkTaskProgress_changeMainTaskprogressFromDONEToNEW_succes() throws Exception {
 		MainTask maintask = new MainTask("MainTask", "Description");
 		int maintaskId = tm.addMainTask(maintask);
-		SubTask subtask = new SubTask("SubTask", "Description", maintaskId);
+		SubTask subtask = new SubTask("SubTask", "Description", maintaskId, LocalDateTime.now(), Duration.ZERO);
 		int subtaskId = tm.addSubTask(subtask);
-		SubTask newSubTask = new SubTask(subtaskId, "newSubTask", "newDescription", maintaskId, TaskProgress.DONE);
+		SubTask newSubTask = new SubTask(subtaskId, "newSubTask", "newDescription", maintaskId, TaskProgress.DONE,
+				LocalDateTime.now(), Duration.ZERO);
 		tm.updateSubTask(newSubTask);
-		SubTask newSubTask2 = new SubTask(subtaskId, "newSubTask", "newDescription", maintaskId, TaskProgress.NEW);
+		SubTask newSubTask2 = new SubTask(subtaskId, "newSubTask", "newDescription", maintaskId, TaskProgress.NEW,
+				LocalDateTime.now(), Duration.ZERO);
 		tm.updateSubTask(newSubTask2);
-		Assertions.assertTrue(tm.getMainTask(maintaskId).getTaskProgress() == TaskProgress.NEW);
+		Assertions.assertTrue(tm.getMainTask(maintaskId).get().getTaskProgress() == TaskProgress.NEW);
 	}
 
 	@Test
 	void deleteTaskById_FromHistory_succes() {
-		Task task = new Task("Task-1", "Description");
+		Task task = new Task("Task-1", "Description", LocalDateTime.now(), Duration.ZERO);
 		int task_id = tm.addTask(task);
 
 		MainTask mainTask = new MainTask("MainTask-1", "Description");
 		int mainTask_id = tm.addMainTask(mainTask);
 
-		SubTask task3 = new SubTask("SubTask-1", "Description", mainTask_id);
+		SubTask task3 = new SubTask("SubTask-1", "Description", mainTask_id, LocalDateTime.now(), Duration.ZERO);
 		int subtask_id = tm.addSubTask(task3);
 
 		// дублирование задач в начале истории
 		tm.getTask(task_id);
-		Task getTask2 = tm.getTask(task_id);
+		Task getTask2 = tm.getTask(task_id).get();
 
 		// дублирование задач в середине истории
 		tm.getMainTask(mainTask_id);
-		Task getMainTask2 = tm.getMainTask(mainTask_id);
+		Task getMainTask2 = tm.getMainTask(mainTask_id).get();
 
 		// дублирование задач в конце истории
 		tm.getSubTask(subtask_id);
-		Task getSubtask2 = tm.getSubTask(subtask_id);
+		Task getSubtask2 = tm.getSubTask(subtask_id).get();
 
 		Assertions.assertEquals(3, tm.getHistory().size());
 		Assertions.assertEquals(getTask2, tm.getHistory().get(0));
@@ -638,9 +650,9 @@ class InMemoryTaskManagerTEST {
 
 	@Test
 	void asd() throws Exception {
-		Task task1 = new Task("Task-1", "Description");
-		Task task2 = new Task("Task-2", "Description");
-		Task task3 = new Task("Task-3", "Description");
+		Task task1 = new Task("Task-1", "Description", LocalDateTime.now(), Duration.ZERO);
+		Task task2 = new Task("Task-2", "Description", LocalDateTime.now(), Duration.ZERO);
+		Task task3 = new Task("Task-3", "Description", LocalDateTime.now(), Duration.ZERO);
 		int task1_id = tm.addTask(task1);
 		int task2_id = tm.addTask(task2);
 		int task3_id = tm.addTask(task3);
@@ -652,26 +664,24 @@ class InMemoryTaskManagerTEST {
 		int maintask2_id = tm.addMainTask(maintask2);
 		int maintask3_id = tm.addMainTask(maintask3);
 
-		SubTask subtask1 = new SubTask("Subtask-1", "Description", maintask1_id);
-		SubTask subtask2 = new SubTask("Subtask-2", "Description", maintask2_id);
-		SubTask subtask3 = new SubTask("Subtask-3", "Description", maintask3_id);
+		SubTask subtask1 = new SubTask("Subtask-1", "Description", maintask1_id, LocalDateTime.now(), Duration.ZERO);
+		SubTask subtask2 = new SubTask("Subtask-2", "Description", maintask2_id, LocalDateTime.now(), Duration.ZERO);
+		SubTask subtask3 = new SubTask("Subtask-3", "Description", maintask3_id, LocalDateTime.now(), Duration.ZERO);
 		int subtask1_id = tm.addSubTask(subtask1);
 		int subtask2_id = tm.addSubTask(subtask2);
 		int subtask3_id = tm.addSubTask(subtask3);
 
-		task1 = tm.getTask(task1_id);
-		task2 = tm.getTask(task2_id);
-		task3 = tm.getTask(task3_id);
+		task1 = tm.getTask(task1_id).get();
+		task2 = tm.getTask(task2_id).get();
+		task3 = tm.getTask(task3_id).get();
 
-		maintask1 = tm.getMainTask(maintask1_id);
-		maintask2 = tm.getMainTask(maintask2_id);
-		maintask3 = tm.getMainTask(maintask3_id);
+		maintask1 = tm.getMainTask(maintask1_id).get();
+		maintask2 = tm.getMainTask(maintask2_id).get();
+		maintask3 = tm.getMainTask(maintask3_id).get();
 
-		subtask1 = tm.getSubTask(subtask1_id);
-		subtask2 = tm.getSubTask(subtask2_id);
-		subtask3 = tm.getSubTask(subtask3_id);
-
-		tm.getHistory().forEach(e -> System.out.println(e));
+		subtask1 = tm.getSubTask(subtask1_id).get();
+		subtask2 = tm.getSubTask(subtask2_id).get();
+		subtask3 = tm.getSubTask(subtask3_id).get();
 
 		Assertions.assertEquals(9, tm.getHistory().size());
 		Assertions.assertEquals(task1, tm.getHistory().get(0));

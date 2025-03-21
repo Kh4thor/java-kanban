@@ -1,6 +1,7 @@
 package main.java.interfaces;
 
 import java.util.List;
+import java.util.Optional;
 
 import main.java.model.Task;
 import main.java.model.SubTask;
@@ -33,19 +34,19 @@ public interface TaskManager {
 	Integer updateSubTask(SubTask newSubtask);
 
 	// получить задачу по id
-	Task getTask(int taskId);
+	Optional<Task> getTask(int taskId);
 
 	// получить главную задачу по id
-	MainTask getMainTask(int maintaskId);
+	Optional<MainTask> getMainTask(int maintaskId);
 
 	// получить подзадачу по id-подзадачи
-	SubTask getSubTask(int id);
+	Optional<SubTask> getSubTask(int id);
 
 	// получить список всех задач
 	List<Task> getTasksList();
 
 	// полчучить список всех главных задач
-	List<Task> getMainTasksList();
+	List<MainTask> getMainTasksList();
 
 	// получить список всех подзадач
 	List<SubTask> getSubTasksList();

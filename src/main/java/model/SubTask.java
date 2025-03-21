@@ -1,24 +1,24 @@
 package main.java.model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class SubTask extends Task {
+public class SubTask extends Task implements Cloneable {
 
 	private int mainTaskId;
 
-	/*
-	 * конструктор для создания подзадачи
-	 */
-	public SubTask(String name, String discription, int mainTaskId) {
-		super(name, discription, TaskProgress.NEW);
+	// конструктор для создания подзадачи с началом и временем выполнения подзадачи
+	public SubTask(String name, String discription, int mainTaskId, LocalDateTime startTime, Duration duration) {
+		super(name, discription, TaskProgress.NEW, startTime, duration);
 		this.mainTaskId = mainTaskId;
 	}
 
-	/*
-	 * конструкторо для обновления подзадачи
-	 */
-	public SubTask(int subtaskId, String name, String discription, int mainTaskId, TaskProgress taskProgress) {
-		super(subtaskId, name, discription, taskProgress);
+	// конструктор для обновления подзадачи без начала и времени выполнения
+	// подзадачи
+	public SubTask(int subtaskId, String name, String discription, int mainTaskId, TaskProgress taskProgress,
+			LocalDateTime startTime, Duration duration) {
+		super(subtaskId, name, discription, taskProgress, startTime, duration);
 		this.mainTaskId = mainTaskId;
 	}
 
@@ -57,6 +57,16 @@ public class SubTask extends Task {
 	@Override
 	public String toString() {
 		return "[id=" + id + ", class=" + this.getClass().getSimpleName() + ", name=" + name + ", taskProgress="
-				+ taskProgress + ", description=" + description + ", maintask_id=" + getMaintaskId() + "]";
+				+ taskProgress + ", description=" + description + ", maintask_id=" + getMaintaskId() + ", startTime="
+				+ getStartTime() + ", duration=" + getDuration() + ", endTime=" + getEndTime() + "]";
 	}
+
+	/*
+	 * метод клонирования подзадачи
+	 */
+	@Override
+	public SubTask clone() throws CloneNotSupportedException {
+		return (SubTask) super.clone();
+	}
+
 }

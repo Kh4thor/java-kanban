@@ -5,6 +5,8 @@ import java.util.List;
 import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 
@@ -63,11 +65,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 				// считывание файла построчно
 				String line = bufferedReader.readLine();
-				if (line.equals("id,type,name,status,description,epic")) {
+				if (line.equals("id,type,name,status,description,epic,startTime,duration,endTime")) {
 					continue;
 				}
 
-				// конвертация задачи в строку
+				// конвертация строки в задачу
 				Task task = convertStringToTask(line, fileBackedTaskManager);
 
 				// определение класса задачи
@@ -75,6 +77,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 				// запись конвертированой задачи в хранилище
 				if (taskType.equals(TaskType.TASK)) {
+
+					// проверка задачи на валидатцию добавления в список приоритетных задач
+					if (fileBackedTaskManager.isValidate(task)) {
+						fileBackedTaskManager.prioritetSet.add(task);
+					}
 					fileBackedTaskManager.taskMap.put(task.getId(), task);
 
 					// запись конвертированой главной задачи в хранилище
@@ -85,6 +92,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 				} else if (taskType.equals(TaskType.SUBTASK)) {
 					SubTask subTask = (SubTask) task;
 					int mainTaskId = subTask.getMaintaskId();
+
+					// проверка задачи на валидатцию добавления в список приоритетных задач
+					if (fileBackedTaskManager.isValidate(task)) {
+						fileBackedTaskManager.prioritetSet.add(task);
+					}
+					// поиск главной задачи подзади и запись подзадачи в хранилище
 					if (fileBackedTaskManager.mainTaskMap.containsKey(mainTaskId)) {
 						MainTask mainTask = fileBackedTaskManager.mainTaskMap.get(mainTaskId);
 						mainTask.addSubTaskToDepo(subTask);
@@ -106,10 +119,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 				System.out.println("Файл " + defaultFile.getName() + " не найден.");
 				System.out.println("Файл " + defaultFile.getName() + " создан в каталоге " + defaultFile.getPath());
 			} else {
-				System.out.println("Файл уже существует.");
+				throw new ManagerSaveException("Файл уже существует.");
 			}
 		} catch (IOException e) {
-			throw new ManagerSaveException("Ошибка при создании файла");
+			throw new ManagerSaveException("Ошибка при создании файла.");
 		}
 	}
 
@@ -123,8 +136,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 			List<List<? extends Task>> lists = List.of(getTasksList(), getMainTasksList(), getSubTasksList());
 
 			// доавление хидера в файл
-			String hidder = "id,type,name,status,description,epic";
-			bufferedWriter.append(hidder + "\n");
+			String header = "id,type,name,status,description,epic,startTime,duration,endTime";
+			bufferedWriter.append(header + "\n");
 
 			// перебор листа хранилищ всех типов задач
 			for (int i = 0; i < lists.size(); i++) {
@@ -136,7 +149,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 					// конвертация задачи в строку
 					String data = convertTaskToString(task);
-
 					// добавление строки в файл
 					bufferedWriter.append(data + "\n");
 				}
@@ -155,12 +167,32 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 			try {
 
-				// считывание полей задачи
+				// считывание строк задачи
 				int id = Integer.parseInt(values[0]);
-				String type = values[1];
-				String name = values[2];
-				String tp = values[3];
-				String discription = values[4];
+				String type = values[1]; // тип задачт
+				String name = values[2]; // название задачи
+				String tp = values[3]; // статус прогресса задачи
+				String discription = values[4]; // описание задачи
+				String mTaskId = "0"; // id-главной задачи для подзадачи
+				String sTime; // время начала выполнения задачи
+				String dur; // продолжительность выполнения задачи (мин.)
+				String eTime; // время окончания выполнения задачи
+				if (type.equals("SUBTASK")) {
+					mTaskId = values[5];
+					sTime = values[6];
+					dur = values[7];
+					eTime = values[8];
+				} else {
+					sTime = values[5];
+					dur = values[6];
+					eTime = values[7];
+				}
+
+				// преобразование необходимых строк в поля задачи
+				int mainTaskid = Integer.parseInt(mTaskId); // id-главной задачи для подзадачи
+				LocalDateTime startTime = LocalDateTime.parse(sTime); // время начала выполнения
+				Duration duration = Duration.ofMinutes(Long.parseLong(dur)); // продолжительность выполнения (мин.)
+				LocalDateTime endTime = LocalDateTime.parse(eTime); // время начала выполнения
 
 				// поиск максимального id задачи в файле
 				int maxid = 0;
@@ -181,26 +213,29 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 				// создание задачи
 				if (type.equals("TASK")) {
-					Task task = new Task(id, name, discription, taskProgress);
+					Task task = new Task(id, name, discription, taskProgress, startTime, duration);
 					return task;
 
 					// создание главной задачи
 				} else if (type.equals("MAINTASK")) {
 					MainTask mainTask = new MainTask(id, name, discription);
 					mainTask.setTaskProgress(taskProgress);
+					mainTask.setDuration(duration);
+					mainTask.setStartTime(startTime);
+					mainTask.setEndTime(endTime);
 					return mainTask;
 
 					// создание подзадачи
 				} else if (type.equals("SUBTASK")) {
-					int mainTaskid = Integer.parseInt(values[5]);
-					SubTask subTask = new SubTask(id, name, discription, mainTaskid, taskProgress);
+					SubTask subTask = new SubTask(id, name, discription, mainTaskid, taskProgress, startTime, duration);
 					return subTask;
 				}
 			} catch (IllegalArgumentException e) {
 				System.out.println("Ошибка конвертации. Неверный формат данных строки.");
 			}
 		}
-		return new Task(-1, "null", "from_convertStringToTask", TaskProgress.UNDEFINED);
+		return new Task(-1, "null", "from_convertStringToTask", TaskProgress.UNDEFINED, LocalDateTime.now(),
+				Duration.ZERO);
 	}
 
 	/*
@@ -214,6 +249,20 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 		String name = task.getName();
 		String taskProgress = String.valueOf(task.getTaskProgress());
 		String discription = task.getDescription();
+		String startTime = null;
+		if (task.getStartTime() != null) {
+			startTime = task.getStartTime().toString();
+		}
+
+		String duration = null;
+		if (task.getDuration() != null) {
+			duration = Long.toString(task.getDuration().toMinutes());
+		}
+
+		String endTime = null;
+		if (task.getEndTime() != null) {
+			endTime = task.getEndTime().toString();
+		}
 
 		// считывание id-главной задачи для подзадачи
 		if (taskType == TaskType.SUBTASK) {
@@ -221,13 +270,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 			String mainTaskId = String.valueOf(subTask.getMaintaskId());
 
 			// создание формата записи подзадачи в файл
-			String taskToString = String.format("%s,%s,%s,%s,%s,%s", id, taskType, name, taskProgress, discription,
-					mainTaskId);
+			String taskToString = String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s", id, taskType, name, taskProgress,
+					discription, mainTaskId, startTime, duration, endTime);
 			return taskToString;
 
 			// создание формата записи задачи/главной задачи в файл
 		} else {
-			String taskToString = String.format("%s,%s,%s,%s,%s", id, taskType, name, taskProgress, discription);
+			String taskToString = String.format("%s,%s,%s,%s,%s,%s,%s,%s", id, taskType, name, taskProgress,
+					discription, startTime, duration, endTime);
 			return taskToString;
 		}
 	}
