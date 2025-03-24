@@ -15,6 +15,7 @@ import main.java.model.SubTask;
 import main.java.model.MainTask;
 import main.java.model.TaskProgress;
 import main.java.model.TaskType;
+import main.java.model.User;
 import main.java.utils.ManagerSaveException;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
@@ -65,7 +66,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 				// считывание файла построчно
 				String line = bufferedReader.readLine();
-				if (line.equals("id,type,name,status,description,epic,startTime,duration,endTime")) {
+				if (line.equals("id,type,name,status,description,epic,startTime,duration,endTime,userId,userName")) {
 					continue;
 				}
 
@@ -149,6 +150,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 					// конвертация задачи в строку
 					String data = convertTaskToString(task);
+
 					// добавление строки в файл
 					bufferedWriter.append(data + "\n");
 				}
@@ -177,15 +179,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 				String sTime; // время начала выполнения задачи
 				String dur; // продолжительность выполнения задачи (мин.)
 				String eTime; // время окончания выполнения задачи
+				String userID;
+				String userName;
 				if (type.equals("SUBTASK")) {
 					mTaskId = values[5];
 					sTime = values[6];
 					dur = values[7];
 					eTime = values[8];
+					userID = values[9];
+					userName = values[10];
 				} else {
 					sTime = values[5];
 					dur = values[6];
 					eTime = values[7];
+					userID = values[8];
+					userName = values[9];
 				}
 
 				// преобразование необходимых строк в поля задачи
@@ -193,6 +201,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 				LocalDateTime startTime = LocalDateTime.parse(sTime); // время начала выполнения
 				Duration duration = Duration.ofMinutes(Long.parseLong(dur)); // продолжительность выполнения (мин.)
 				LocalDateTime endTime = LocalDateTime.parse(eTime); // время начала выполнения
+				int userId = Integer.parseInt(userID);
+				User user = new User(userId, userName);
 
 				// поиск максимального id задачи в файле
 				int maxid = 0;
@@ -213,12 +223,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 				// создание задачи
 				if (type.equals("TASK")) {
-					Task task = new Task(id, name, discription, taskProgress, startTime, duration);
+					Task task = new Task(id, name, discription, taskProgress, startTime, duration, user);
 					return task;
 
 					// создание главной задачи
 				} else if (type.equals("MAINTASK")) {
-					MainTask mainTask = new MainTask(id, name, discription);
+					MainTask mainTask = new MainTask(id, name, discription, user);
 					mainTask.setTaskProgress(taskProgress);
 					mainTask.setDuration(duration);
 					mainTask.setStartTime(startTime);
@@ -227,15 +237,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 					// создание подзадачи
 				} else if (type.equals("SUBTASK")) {
-					SubTask subTask = new SubTask(id, name, discription, mainTaskid, taskProgress, startTime, duration);
+					SubTask subTask = new SubTask(id, name, discription, mainTaskid, taskProgress, startTime, duration,
+							user);
 					return subTask;
 				}
 			} catch (IllegalArgumentException e) {
 				System.out.println("Ошибка конвертации. Неверный формат данных строки.");
 			}
 		}
+		User user = new User();
 		return new Task(-1, "null", "from_convertStringToTask", TaskProgress.UNDEFINED, LocalDateTime.now(),
-				Duration.ZERO);
+				Duration.ZERO, user);
 	}
 
 	/*
@@ -249,6 +261,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 		String name = task.getName();
 		String taskProgress = String.valueOf(task.getTaskProgress());
 		String discription = task.getDescription();
+		String userId = String.valueOf(task.getUser().getId());
+		String userName = task.getUser().getName();
 		String startTime = null;
 		if (task.getStartTime() != null) {
 			startTime = task.getStartTime().toString();
@@ -270,14 +284,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 			String mainTaskId = String.valueOf(subTask.getMaintaskId());
 
 			// создание формата записи подзадачи в файл
-			String taskToString = String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s", id, taskType, name, taskProgress,
-					discription, mainTaskId, startTime, duration, endTime);
+			String taskToString = String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s", id, taskType, name, taskProgress,
+					discription, mainTaskId, startTime, duration, endTime, userId, userName);
 			return taskToString;
 
 			// создание формата записи задачи/главной задачи в файл
 		} else {
-			String taskToString = String.format("%s,%s,%s,%s,%s,%s,%s,%s", id, taskType, name, taskProgress,
-					discription, startTime, duration, endTime);
+			String taskToString = String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s", id, taskType, name, taskProgress,
+					discription, startTime, duration, endTime, userId, userName);
 			return taskToString;
 		}
 	}

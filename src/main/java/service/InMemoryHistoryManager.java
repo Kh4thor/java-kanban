@@ -7,6 +7,7 @@ import main.java.model.MainTask;
 import main.java.model.SubTask;
 import main.java.model.Task;
 import main.java.model.TaskProgress;
+import main.java.model.User;
 import main.java.utils.Node;
 
 import java.util.List;
@@ -35,20 +36,21 @@ public class InMemoryHistoryManager implements HistoryManager {
 			TaskProgress progress = task.getTaskProgress();
 			LocalDateTime startTime = task.getStartTime();
 			Duration duration = task.getDuration();
+			User user = task.getUser();
 
 			Task snapShotTask = task;
 			// сделать слепок объекта класса типа Task
 			if (task.getClass() == Task.class) {
-				snapShotTask = new Task(id, name, discription, progress, startTime, duration);
+				snapShotTask = new Task(id, name, discription, progress, startTime, duration, user);
 
 				// сделать слепок объекта класса типа MainTask
 			} else if (task.getClass() == MainTask.class) {
-				snapShotTask = new MainTask(id, name, discription);
+				snapShotTask = new MainTask(id, name, discription, user);
 
 				// сделать слепок объекта класса типа SubTask
 			} else if (task.getClass() == SubTask.class) {
 				int maintaskId = ((SubTask) task).getMaintaskId();
-				snapShotTask = new SubTask(id, name, discription, maintaskId, progress, startTime, duration);
+				snapShotTask = new SubTask(id, name, discription, maintaskId, progress, startTime, duration, user);
 			}
 			// записать слепок в качестве последнего узла в двусвязный список
 			Node<Task> lastNode = linkLast(snapShotTask);

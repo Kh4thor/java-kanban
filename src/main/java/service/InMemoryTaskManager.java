@@ -50,6 +50,10 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 		return historyManager.getHistoryReverse();
 	}
 
+	
+	/*
+	 * проверка на валидацию добавления задачи в лист приоритных задач 
+	 */
 	public boolean isValidateToAddTaskOrSubTaskToPrioritetSet(Task task) {
 		if (task.getClass() == Task.class
 				|| task.getClass() == SubTask.class && task.getStartTime() != null && task.getDuration() != null) {
@@ -73,7 +77,6 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 				cloneTask.setId(++id);
 
 				// положить задачу в хранилище приоритетов
-
 				if (isValidateToAddTaskOrSubTaskToPrioritetSet(task)) {
 					prioritetSet.add(cloneTask);
 				}
@@ -226,8 +229,8 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 							SubTask cloneSubtask = subtask.clone();
 
 							if (isValidateToAddTaskOrSubTaskToPrioritetSet(subtask)) {
+								
 								// удалить обновляемую подзадачу из хранилища приоритетных задач
-
 								prioritetSet.removeIf(t -> t.getId() == cloneSubtask.getId());
 								// добавить в хранилище приоритеных задач обновленную подзадачу
 

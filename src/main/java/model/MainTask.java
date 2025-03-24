@@ -14,13 +14,13 @@ public class MainTask extends Task implements HasSubTask, Cloneable {
 	private Map<Integer, SubTask> subTaskMap = new HashMap<>();
 
 	// конструктор для создания главной задачи
-	public MainTask(String name, String discription) {
-		super(name, discription, TaskProgress.NEW, null, null);
+	public MainTask(String name, String discription, User user) {
+		super(name, discription, TaskProgress.NEW, null, null, user);
 	}
 
 	// конструктор для обновления главной задачи
-	public MainTask(int id, String name, String discription) {
-		super(id, name, discription, TaskProgress.NEW, null, null);
+	public MainTask(int id, String name, String discription, User user) {
+		super(id, name, discription, TaskProgress.NEW, null, null, user);
 	}
 
 	// возврат типа класса через перечисление
