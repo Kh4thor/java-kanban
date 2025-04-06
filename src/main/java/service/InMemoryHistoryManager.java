@@ -1,5 +1,10 @@
 package main.java.service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import main.java.interfaces.HistoryManager;
@@ -7,14 +12,7 @@ import main.java.model.MainTask;
 import main.java.model.SubTask;
 import main.java.model.Task;
 import main.java.model.TaskProgress;
-import main.java.model.User;
 import main.java.utils.Node;
-
-import java.util.List;
-import java.util.HashMap;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
@@ -29,34 +27,38 @@ public class InMemoryHistoryManager implements HistoryManager {
 	@Override
 	public Integer addToHistory(Task task) {
 		if (task != null) {
-			// получить параметры
-			int id = task.getId();
-			String name = task.getName();
-			String discription = task.getDescription();
-			TaskProgress progress = task.getTaskProgress();
-			LocalDateTime startTime = task.getStartTime();
-			Duration duration = task.getDuration();
-			User user = task.getUser();
 
 			Task snapShotTask = task;
 			// сделать слепок объекта класса типа Task
 			if (task.getClass() == Task.class) {
-				snapShotTask = new Task(id, name, discription, progress, startTime, duration, user);
-
+				try {
+					snapShotTask = task.clone();
+				} catch (CloneNotSupportedException e) {
+					e.printStackTrace();
+				}
+				
 				// сделать слепок объекта класса типа MainTask
 			} else if (task.getClass() == MainTask.class) {
-				snapShotTask = new MainTask(id, name, discription, user);
+				try {
+					snapShotTask = (MainTask)task.clone();
+				} catch (CloneNotSupportedException e) {
+					e.printStackTrace();
+				}
 
 				// сделать слепок объекта класса типа SubTask
 			} else if (task.getClass() == SubTask.class) {
-				int maintaskId = ((SubTask) task).getMaintaskId();
-				snapShotTask = new SubTask(id, name, discription, maintaskId, progress, startTime, duration, user);
+				try {
+					snapShotTask = (SubTask)task.clone();
+				} catch (CloneNotSupportedException e) {
+					e.printStackTrace();
+				}
 			}
 			// записать слепок в качестве последнего узла в двусвязный список
 			Node<Task> lastNode = linkLast(snapShotTask);
 
+			
 			// добавить узел в хранилище
-			nodeMap.put(id, lastNode);
+			nodeMap.put(lastNode.data.getId(), lastNode);
 			return 1;
 		}
 		return -1;

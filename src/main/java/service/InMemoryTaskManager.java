@@ -1,23 +1,22 @@
 package main.java.service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
-import main.java.model.Task;
-import main.java.model.SubTask;
-import main.java.model.MainTask;
-import main.java.model.TaskProgress;
-import main.java.interfaces.TaskManager;
 import main.java.interfaces.HistoryManager;
-
-import java.util.List;
-import java.util.HashMap;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
+import main.java.interfaces.TaskManager;
+import main.java.model.MainTask;
+import main.java.model.SubTask;
+import main.java.model.Task;
+import main.java.model.TaskProgress;
 
 public class InMemoryTaskManager implements TaskManager, Cloneable {
 
@@ -50,14 +49,15 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 		return historyManager.getHistoryReverse();
 	}
 
-	
 	/*
-	 * проверка на валидацию добавления задачи в лист приоритных задач 
+	 * проверка на пересечение входящей задачи с задачами из приоритетного списка
 	 */
+	@Override
 	public boolean isValidateToAddTaskOrSubTaskToPrioritetSet(Task task) {
 		if (task.getClass() == Task.class
 				|| task.getClass() == SubTask.class && task.getStartTime() != null && task.getDuration() != null) {
-			return true;
+			return (prioritetSet.stream().filter(t -> t.getId() != task.getId())
+					.noneMatch(t -> isTasksIntersectInTime(t, task)));
 		}
 		return false;
 	}
@@ -68,7 +68,6 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	@Override
 	public Integer addTask(Task task) {
 		if (isValidateToAddTask(task)) {
-
 			try {
 				// клонирование задачи
 				Task cloneTask = task.clone();
@@ -76,17 +75,17 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 				// установить id для задачи
 				cloneTask.setId(++id);
 
+				int id = cloneTask.getId();
+
+				// положить задачу в хранилище задач
+				taskMap.put(id, cloneTask);
+
 				// положить задачу в хранилище приоритетов
 				if (isValidateToAddTaskOrSubTaskToPrioritetSet(task)) {
 					prioritetSet.add(cloneTask);
 				}
 
-				int id = cloneTask.getId();
-
-				// положить задачу в хранилище задач
-				taskMap.put(id, cloneTask);
 				return id;
-
 			} catch (CloneNotSupportedException e) {
 				e.printStackTrace();
 			}
@@ -229,7 +228,7 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 							SubTask cloneSubtask = subtask.clone();
 
 							if (isValidateToAddTaskOrSubTaskToPrioritetSet(subtask)) {
-								
+
 								// удалить обновляемую подзадачу из хранилища приоритетных задач
 								prioritetSet.removeIf(t -> t.getId() == cloneSubtask.getId());
 								// добавить в хранилище приоритеных задач обновленную подзадачу
@@ -353,7 +352,7 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	 */
 	@Override
 	public Integer deleteTaskById(int taskId) {
-		if (taskId > 0 && taskMap != null && prioritetSet != null) {
+		if (taskId > 0 && taskMap != null && prioritetSet != null && taskMap.containsKey(taskId)) {
 
 			// удалить задачу из хранилища задач
 			Task taskToRemove = taskMap.remove(taskId);
@@ -414,7 +413,7 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 
 				// поиск хранилища подзадач главной задачи
 				Map<Integer, SubTask> subTaskMap = mainTask.getSubTaskMap();
-				if (subTaskMap != null) {
+				if (subTaskMap != null && subTaskMap.containsKey(sTaskId)) {
 
 					// поиск подзадачи по id в хранилище задач
 					for (int subTaskId : subTaskMap.keySet()) {
@@ -549,20 +548,9 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	/*
 	 * получить список приоритетных задач
 	 */
+	@Override
 	public List<Task> getPrioritizedTasks() {
 		return prioritetSet.stream().toList();
-	}
-
-	/*
-	 * проверка на пересечение входящей задачи с задачами из приоритетного списка
-	 */
-	protected boolean isValidate(Task task) {
-		if (task.getId() > 0 && task.getStartTime() != null && task.getDuration() != null) {
-			return (prioritetSet.stream().filter(t -> t.getId() != task.getId())
-					.noneMatch(t -> isTasksIntersectInTime(t, task)));
-		}
-		return true;
-
 	}
 
 	/*
@@ -609,7 +597,7 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	 */
 	private boolean isValidateToAddTask(Task task) {
 		if (task != null && task.getClass() == Task.class && !taskMap.containsKey(task.getId()) && task.getId() == 0
-				&& !task.getName().isBlank() && !task.getName().isEmpty() && isValidate(task)) {
+				&& !task.getName().isBlank() && !task.getName().isEmpty()) {
 			return true;
 		}
 		return false;
@@ -631,8 +619,8 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	 */
 	private boolean isValidateToAddSubTask(SubTask subtask) {
 		if (subtask != null && subtask.getId() == 0 && !subtask.getName().isBlank() && !subtask.getName().isEmpty()
-				&& mainTaskMap.containsKey(subtask.getMaintaskId()) && mainTaskMap.get(subtask.getMaintaskId()) != null
-				&& isValidate(subtask)) {
+				&& mainTaskMap.containsKey(subtask.getMaintaskId())
+				&& mainTaskMap.get(subtask.getMaintaskId()) != null) {
 			return true;
 		}
 		return false;
@@ -643,8 +631,7 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	 */
 	private boolean isValidateToUpdateTask(Task task) {
 		if (task != null && task.getClass() == Task.class && task.getId() > 0 && taskMap.containsKey(task.getId())
-				&& !task.getName().isEmpty() && !task.getName().isBlank() && task.getTaskProgress() != null
-				&& isValidate(task)) {
+				&& !task.getName().isEmpty() && !task.getName().isBlank() && task.getTaskProgress() != null) {
 			return true;
 		}
 		return false;
@@ -662,8 +649,7 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	}
 
 	private boolean isVaslidateToUpdateSubTask(SubTask subtask) {
-		if (subtask != null && subtask.getId() > 0 && isValidate(subtask)
-				&& mainTaskMap.containsKey(subtask.getMaintaskId())) {
+		if (subtask != null && subtask.getId() > 0 && mainTaskMap.containsKey(subtask.getMaintaskId())) {
 			return true;
 		}
 		return false;
@@ -772,7 +758,11 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 	/*
 	 * метод сравнения задач для сортирвки хранилища приоритеных задач
 	 */
+
 	private int compare(Task t1, Task t2) {
+		if (t1.getStartTime() == null) {
+			return 1;
+		}
 		if (t1.getStartTime().isAfter(t2.getStartTime())) {
 			return 1;
 		}

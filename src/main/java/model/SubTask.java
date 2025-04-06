@@ -9,16 +9,16 @@ public class SubTask extends Task implements Cloneable {
 	private int mainTaskId;
 
 	// конструктор для создания подзадачи с началом и временем выполнения подзадачи
-	public SubTask(String name, String discription, int mainTaskId, LocalDateTime startTime, Duration duration, User user) {
-		super(name, discription, TaskProgress.NEW, startTime, duration, user);
+	public SubTask(String name, String discription, int mainTaskId, LocalDateTime startTime, Duration duration) {
+		super(name, discription, TaskProgress.NEW, startTime, duration);
 		this.mainTaskId = mainTaskId;
 	}
 
 	// конструктор для обновления подзадачи без начала и времени выполнения
 	// подзадачи
 	public SubTask(int subtaskId, String name, String discription, int mainTaskId, TaskProgress taskProgress,
-			LocalDateTime startTime, Duration duration, User user) {
-		super(subtaskId, name, discription, taskProgress, startTime, duration, user);
+			LocalDateTime startTime, Duration duration) {
+		super(subtaskId, name, discription, taskProgress, startTime, duration);
 		this.mainTaskId = mainTaskId;
 	}
 

@@ -1,8 +1,8 @@
 package main.java.model;
 
-import java.util.Map;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import main.java.interfaces.HasSubTask;
@@ -14,13 +14,13 @@ public class MainTask extends Task implements HasSubTask, Cloneable {
 	private Map<Integer, SubTask> subTaskMap = new HashMap<>();
 
 	// конструктор для создания главной задачи
-	public MainTask(String name, String discription, User user) {
-		super(name, discription, TaskProgress.NEW, null, null, user);
+	public MainTask(String name, String discription) {
+		super(name, discription, TaskProgress.NEW, null, null);
 	}
 
 	// конструктор для обновления главной задачи
-	public MainTask(int id, String name, String discription, User user) {
-		super(id, name, discription, TaskProgress.NEW, null, null, user);
+	public MainTask(int id, String name, String discription) {
+		super(id, name, discription, TaskProgress.NEW, null, null);
 	}
 
 	// возврат типа класса через перечисление

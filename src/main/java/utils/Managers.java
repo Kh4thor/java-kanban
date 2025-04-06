@@ -1,20 +1,18 @@
 package main.java.utils;
 
 import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-
-import main.java.model.Task;
 import main.java.interfaces.TaskManager;
-import main.java.interfaces.UserManager;
-import main.java.service.InMemoryTaskManager;
-import main.java.service.InMemoryUserManager;
+import main.java.model.Task;
 import main.java.service.FileBackedTaskManager;
+import main.java.service.InMemoryTaskManager;
 
 public final class Managers {
 
@@ -45,13 +43,8 @@ public final class Managers {
 		return FileBackedTaskManager.loadFromFile(file);
 	}
 
-	public static UserManager getDefaultUserManager() {
-		return new InMemoryUserManager();
-	}
-
 	public static Gson getGson() {
-		GsonBuilder gsonBuilder = new GsonBuilder();
-		gsonBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
-		return gsonBuilder.create();
+		return new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+				.registerTypeAdapter(Duration.class, new DurationAdapter()).serializeNulls().create();
 	}
 }

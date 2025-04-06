@@ -12,67 +12,56 @@ public class Task implements Cloneable {
 	protected TaskProgress taskProgress; // статус выполнения задачи
 	protected LocalDateTime startTime; // время начала выполнения задачи
 	protected Duration duration; // продолжительность выполнения задачи
-	protected User user;
 	
-	
-	
-	public User getUser () {
-		return user;
-	}
 	
 	// конструктор для создания задачи с указанием начала и времени выполнения
 	// задачи
-	public Task(String name, String description, LocalDateTime startTime, Duration duration, User user) {
+	public Task(String name, String description, LocalDateTime startTime, Duration duration) {
 		this.name = name;
 		this.description = description;
 		this.taskProgress = TaskProgress.NEW;
 		this.startTime = startTime;
 		this.duration = duration;
-		this.user = user;
 	}
 
 	// конструктор для создания задачи без указания начала и времени выполнения
 	// задачи
-	public Task(String name, String description, User user) {
+	public Task(String name, String description) {
 		this.name = name;
 		this.description = description;
 		this.taskProgress = TaskProgress.NEW;
-		this.user = user;
 	}
 
 	// конструктор для обновления задачи с указанием начала и времени выполнения
 	// задачи
 	public Task(int id, String name, String description, TaskProgress taskProgress, LocalDateTime startTime,
-			Duration duration, User user) {
+			Duration duration) {
 		this.id = id;
 		this.name = name;
 		this.taskProgress = taskProgress;
 		this.description = description;
 		this.startTime = startTime;
 		this.duration = duration;
-		this.user = user;
 	}
 
 	// конструктор для обновления задачи без указания начала и времени выполнения
 	// задачи
-	public Task(int id, String name, String description, TaskProgress taskProgress, User user) {
+	public Task(int id, String name, String description, TaskProgress taskProgress) {
 		this.id = id;
 		this.name = name;
 		this.taskProgress = taskProgress;
 		this.description = description;
-		this.user = user;
 	}
 
 	// конструктор для обновления задачи с указанием начала и времени выполнения
 	// задачи для MainTask
 	protected Task(String name, String description, TaskProgress taskProgress, LocalDateTime startTime,
-			Duration duration, User user) {
+			Duration duration) {
 		this.name = name;
 		this.taskProgress = taskProgress;
 		this.description = description;
 		this.startTime = startTime;
 		this.duration = duration;
-		this.user = user;
 	}
 
 	public Duration getDuration() {
