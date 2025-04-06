@@ -1,7 +1,5 @@
 package main.java.service;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +9,6 @@ import main.java.interfaces.HistoryManager;
 import main.java.model.MainTask;
 import main.java.model.SubTask;
 import main.java.model.Task;
-import main.java.model.TaskProgress;
 import main.java.utils.Node;
 
 public class InMemoryHistoryManager implements HistoryManager {
@@ -36,11 +33,11 @@ public class InMemoryHistoryManager implements HistoryManager {
 				} catch (CloneNotSupportedException e) {
 					e.printStackTrace();
 				}
-				
+
 				// сделать слепок объекта класса типа MainTask
 			} else if (task.getClass() == MainTask.class) {
 				try {
-					snapShotTask = (MainTask)task.clone();
+					snapShotTask = (MainTask) task.clone();
 				} catch (CloneNotSupportedException e) {
 					e.printStackTrace();
 				}
@@ -48,7 +45,7 @@ public class InMemoryHistoryManager implements HistoryManager {
 				// сделать слепок объекта класса типа SubTask
 			} else if (task.getClass() == SubTask.class) {
 				try {
-					snapShotTask = (SubTask)task.clone();
+					snapShotTask = (SubTask) task.clone();
 				} catch (CloneNotSupportedException e) {
 					e.printStackTrace();
 				}
@@ -56,7 +53,6 @@ public class InMemoryHistoryManager implements HistoryManager {
 			// записать слепок в качестве последнего узла в двусвязный список
 			Node<Task> lastNode = linkLast(snapShotTask);
 
-			
 			// добавить узел в хранилище
 			nodeMap.put(lastNode.data.getId(), lastNode);
 			return 1;

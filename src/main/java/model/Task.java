@@ -12,8 +12,7 @@ public class Task implements Cloneable {
 	protected TaskProgress taskProgress; // статус выполнения задачи
 	protected LocalDateTime startTime; // время начала выполнения задачи
 	protected Duration duration; // продолжительность выполнения задачи
-	
-	
+
 	// конструктор для создания задачи с указанием начала и времени выполнения
 	// задачи
 	public Task(String name, String description, LocalDateTime startTime, Duration duration) {
