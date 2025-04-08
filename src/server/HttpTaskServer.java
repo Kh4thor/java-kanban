@@ -165,7 +165,7 @@ public class HttpTaskServer {
 				response = id > 0 ? "Задача с id=" + id + " обновлена"
 						: "Задача с id=" + task.getId() + " не прошла валидацию при попытке обновления";
 			}
-			
+
 			code = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(task) == true ? code : 406;
 			response = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(task) == true ? response
 					: "Задача пересекается с существующими";
@@ -202,7 +202,7 @@ public class HttpTaskServer {
 				response = id > 0 ? "Подзадача с id=" + id + " обновлена"
 						: "Подзадача с id=" + subtask.getId() + " не прошла валидацию при попытке обновления.";
 			}
-			
+
 			code = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(subtask) == true ? 200 : 406;
 			response = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(subtask) == true ? response
 					: "Задача пересекается с существующими";
