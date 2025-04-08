@@ -165,6 +165,10 @@ public class HttpTaskServer {
 				response = id > 0 ? "Задача с id=" + id + " обновлена"
 						: "Задача с id=" + task.getId() + " не прошла валидацию при попытке обновления";
 			}
+			
+			code = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(task) == true ? code : 406;
+			response = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(task) == true ? response
+					: "Задача пересекается с существующими";
 			break;
 
 		case POST_MAINTASK:
@@ -186,10 +190,6 @@ public class HttpTaskServer {
 		case POST_SUBTASK:
 			SubTask subtask = gson.fromJson(requestBody, SubTask.class);
 
-			code = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(subtask) == true ? 200 : 406;
-			response = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(subtask) == true ? response
-					: "Задача пересекается с существующими";
-
 			if (subtask.getId() == 0) {
 				id = taskmanager.addSubTask(subtask);
 				code = id > 0 ? 200 : code;
@@ -202,6 +202,11 @@ public class HttpTaskServer {
 				response = id > 0 ? "Подзадача с id=" + id + " обновлена"
 						: "Подзадача с id=" + subtask.getId() + " не прошла валидацию при попытке обновления.";
 			}
+			
+			code = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(subtask) == true ? 200 : 406;
+			response = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(subtask) == true ? response
+					: "Задача пересекается с существующими";
+
 			break;
 
 		default:
