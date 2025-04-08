@@ -1,18 +1,18 @@
 package main.java.service;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.util.List;
-import java.io.FileWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.util.List;
 
-import main.java.model.Task;
-import main.java.model.SubTask;
 import main.java.model.MainTask;
+import main.java.model.SubTask;
+import main.java.model.Task;
 import main.java.model.TaskProgress;
 import main.java.model.TaskType;
 import main.java.utils.ManagerSaveException;
@@ -79,7 +79,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 				if (taskType.equals(TaskType.TASK)) {
 
 					// проверка задачи на валидатцию добавления в список приоритетных задач
-					if (fileBackedTaskManager.isValidate(task)) {
+					if (fileBackedTaskManager.isValidateToAddTaskOrSubTaskToPrioritetSet(task)) {
 						fileBackedTaskManager.prioritetSet.add(task);
 					}
 					fileBackedTaskManager.taskMap.put(task.getId(), task);
@@ -94,7 +94,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 					int mainTaskId = subTask.getMaintaskId();
 
 					// проверка задачи на валидатцию добавления в список приоритетных задач
-					if (fileBackedTaskManager.isValidate(task)) {
+					if (fileBackedTaskManager.isValidateToAddTaskOrSubTaskToPrioritetSet(task)) {
 						fileBackedTaskManager.prioritetSet.add(task);
 					}
 					// поиск главной задачи подзади и запись подзадачи в хранилище
@@ -149,6 +149,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 					// конвертация задачи в строку
 					String data = convertTaskToString(task);
+
 					// добавление строки в файл
 					bufferedWriter.append(data + "\n");
 				}
@@ -276,7 +277,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 			// создание формата записи задачи/главной задачи в файл
 		} else {
-			String taskToString = String.format("%s,%s,%s,%s,%s,%s,%s,%s", id, taskType, name, taskProgress,
+			String taskToString = String.format("%s,%s,%s,%s,%s,%s,%s,%s,", id, taskType, name, taskProgress,
 					discription, startTime, duration, endTime);
 			return taskToString;
 		}

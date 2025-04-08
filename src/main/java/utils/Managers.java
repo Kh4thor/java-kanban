@@ -1,13 +1,18 @@
 package main.java.utils;
 
 import java.io.File;
-import java.util.List;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
 
-import main.java.model.Task;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import main.java.interfaces.TaskManager;
-import main.java.service.InMemoryTaskManager;
+import main.java.model.Task;
 import main.java.service.FileBackedTaskManager;
+import main.java.service.InMemoryTaskManager;
 
 public final class Managers {
 
@@ -36,5 +41,10 @@ public final class Managers {
 	// вызов дефолтного менеджера задач для работы со сторонним файлом
 	public static TaskManager getDefaultFileBackedTaskManager(File file) throws IOException {
 		return FileBackedTaskManager.loadFromFile(file);
+	}
+
+	public static Gson getGson() {
+		return new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+				.registerTypeAdapter(Duration.class, new DurationAdapter()).serializeNulls().create();
 	}
 }

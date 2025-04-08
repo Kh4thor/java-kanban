@@ -3,9 +3,9 @@ package main.java.interfaces;
 import java.util.List;
 import java.util.Optional;
 
-import main.java.model.Task;
-import main.java.model.SubTask;
 import main.java.model.MainTask;
+import main.java.model.SubTask;
+import main.java.model.Task;
 
 public interface TaskManager {
 
@@ -74,4 +74,10 @@ public interface TaskManager {
 
 	// очистить все хранилища
 	Integer clearAllDepos() throws Exception;
+
+	// получить список приоритетных задач
+	List<Task> getPrioritizedTasks();
+
+	// проверить на пересечение задачи с задачами из приоритетного списка
+	boolean isValidateToAddTaskOrSubTaskToPrioritetSet(Task task);
 }
