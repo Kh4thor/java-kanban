@@ -10,9 +10,6 @@ public enum Endpoint {
 	// /tasks
 	POST_TASK,
 
-	// /tasks
-	PUT_TASK,
-
 	// /tasks/{id}
 	DELETE_TASK_BY_ID,
 
@@ -28,9 +25,6 @@ public enum Endpoint {
 	// /subtasks
 	POST_SUBTASK,
 
-	// /subtasks
-	PUT_SUBTASK,
-
 	// /subtasks/{id}
 	DELETE_SUBTASK_BY_ID,
 
@@ -42,9 +36,6 @@ public enum Endpoint {
 
 	// /maintasks
 	POST_MAINTASK,
-
-	// /maintasks
-	PUT_MAINTASK,
 
 	// /maintasks/{id}
 	DELETE_MAINTASK_BY_ID,

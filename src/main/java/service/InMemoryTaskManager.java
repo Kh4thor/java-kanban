@@ -135,16 +135,16 @@ public class InMemoryTaskManager implements TaskManager, Cloneable {
 				// установить id для подзадачи
 				cloneSubtask.setId(++id);
 
-				// добавить подзадачу в хранилище приоритетных задач
-				if (isValidateToAddTaskOrSubTaskToPrioritetSet(subtask)) {
-					prioritetSet.add(cloneSubtask);
-				}
-
 				// добавить подзадачу в хранилище подзадач...
 				mainTask.addSubTaskToDepo(cloneSubtask);
 
 				// отследить статус главной задачи
 				checkMainTaskStatus(mainTask);
+
+				// добавить подзадачу в хранилище приоритетных задач
+				if (isValidateToAddTaskOrSubTaskToPrioritetSet(subtask)) {
+					prioritetSet.add(cloneSubtask);
+				}
 				return cloneSubtask.getId();
 
 			} catch (CloneNotSupportedException e) {

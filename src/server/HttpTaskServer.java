@@ -71,22 +71,13 @@ public class HttpTaskServer {
 		switch (endpoint) {
 
 		case POST_TASK:
-			postTaskHandle(httpExchange, endpoint);
+			postOrPutHandle(httpExchange, endpoint);
 			break;
 		case POST_MAINTASK:
-			postTaskHandle(httpExchange, endpoint);
+			postOrPutHandle(httpExchange, endpoint);
 			break;
 		case POST_SUBTASK:
-			postTaskHandle(httpExchange, endpoint);
-			break;
-		case PUT_TASK:
-			putTaskHandle(httpExchange, endpoint);
-			break;
-		case PUT_MAINTASK:
-			putTaskHandle(httpExchange, endpoint);
-			break;
-		case PUT_SUBTASK:
-			putTaskHandle(httpExchange, endpoint);
+			postOrPutHandle(httpExchange, endpoint);
 			break;
 		case GET_TASKS:
 			getTasksHandler(httpExchange, endpoint);
@@ -133,130 +124,89 @@ public class HttpTaskServer {
 		case GET_PRIOTIZED_TASKS:
 			getPrioritizedHandler(httpExchange);
 			break;
-
 		case UNDEFINED_PATH:
 			String response = "Неверный адрес запроса: " + requestPath;
 			writeResponse(httpExchange, response, 400);
-
-		default:
+		case UNDEFINED_METHOD:
 			response = "Метод " + requestMethod + " не поддерживается";
 			writeResponse(httpExchange, response, 405);
 		}
 	}
 
-	private void postTaskHandle(HttpExchange httpExchange, Endpoint endpoint) {
-
+	private void postOrPutHandle(HttpExchange httpExchange, Endpoint endpoint) {
 		String requestBody = readRequestBody(httpExchange);
 
+		if (gson.fromJson(requestBody, Task.class) == null) {
+			return;
+		}
+
 		int id = -1;
-		int code = 406;
-		String response = "Задача пересекается с существующими";
+		int code = 400;
+		String response = "Неверный запрос";
 
 		switch (endpoint) {
+
 		case POST_TASK:
 			Task task = gson.fromJson(requestBody, Task.class);
 
-			id = taskmanager.addTask(task);
-			code = 200;
-			if (taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(task)) {
-				if (id > 0) {
-					response = "Задача добавлена";
-				} else {
-					response = "Задача не прошла валидацию и добавлена не была";
-				}
+			code = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(task) == true ? code : 406;
+			response = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(task) == true ? response
+					: "Задача пересекается с существующими";
+
+			if (task.getId() == 0) {
+				id = taskmanager.addTask(task);
+				code = id > 0 ? 200 : code;
+				response = id > 0 ? "Задача " + task.getName() + " добавлена с присвоенным id=" + id
+						: "Задача" + task.getName() + " не прошла валидацию при попытке добавления";
+
+			} else {
+				id = taskmanager.updateTask(task);
+				code = id > 0 ? 200 : code;
+				response = id > 0 ? "Задача с id=" + id + " обновлена"
+						: "Задача с id=" + task.getId() + " не прошла валидацию при попытке обновления";
 			}
-			code = 406;
 			break;
 
 		case POST_MAINTASK:
 			MainTask maintask = gson.fromJson(requestBody, MainTask.class);
-			id = taskmanager.addMainTask(maintask);
-			code = 200;
-			if (id > 0) {
-				response = "Задача добавлена";
+
+			if (maintask.getId() == 0) {
+				id = taskmanager.addMainTask(maintask);
+				code = id > 0 ? 200 : code;
+				response = id > 0 ? "Главная задача " + maintask.getName() + " добавлена с присвоенным id=" + id
+						: "Главная задача" + maintask.getName() + " не прошла валидацию при попытке добавления";
 			} else {
-				response = "Задача не прошла валидацию и добавлена не была";
+				id = taskmanager.updateMainTask(maintask);
+				code = id > 0 ? 200 : code;
+				response = id > 0 ? "Главная задача с id=" + id + " обновлена"
+						: "Главная задача с id=" + maintask.getId() + " не прошла валидацию при попытке обновления";
 			}
 			break;
 
 		case POST_SUBTASK:
 			SubTask subtask = gson.fromJson(requestBody, SubTask.class);
-			id = taskmanager.addSubTask(subtask);
-			code = 200;
-			if (taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(subtask)) {
-				if (id > 0) {
-					response = "Задача добавлена";
-				} else {
-					response = "Задача не прошла валидацию и добавлена не была";
-				}
-			}
-			break;
 
-		default:
-			response = "Неверный запрос " + endpoint;
-			code = 500;
-			break;
-		}
+			code = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(subtask) == true ? 200 : 406;
+			response = taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(subtask) == true ? response
+					: "Задача пересекается с существующими";
 
-		writeResponse(httpExchange, response, code);
-	}
+			if (subtask.getId() == 0) {
+				id = taskmanager.addSubTask(subtask);
+				code = id > 0 ? 200 : code;
+				response = id > 0 ? "Подзадача " + subtask.getName() + " добавлена с присвоенным id=" + id
+						: "Подзадача " + subtask.getName() + " не прошла валидацию при попытке добавления";
 
-	private void putTaskHandle(HttpExchange httpExchange, Endpoint endpoint) {
-		String requestBody = readRequestBody(httpExchange);
-
-		int id = -1;
-		int code = 406;
-		String response = "Задача пересекается с существующими";
-
-		switch (endpoint) {
-
-		case PUT_TASK:
-			Task task = gson.fromJson(requestBody, Task.class);
-
-			id = taskmanager.updateTask(task);
-			code = 200;
-			if (taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(task)) {
-				if (id > 0) {
-					code = 200;
-					response = "Задача обновлена";
-				} else {
-					code = 200;
-					response = "Задача не прошла валидацию и не была обновлена";
-				}
-			}
-			break;
-
-		case PUT_MAINTASK:
-			MainTask maintask = gson.fromJson(requestBody, MainTask.class);
-			id = taskmanager.updateMainTask(maintask);
-			code = 200;
-			if (id > 0) {
-				code = 200;
-				response = "Задача обновлена";
 			} else {
-				code = 200;
-				response = "Задача не прошла валидацию и не была обновлена";
-			}
-			break;
-
-		case PUT_SUBTASK:
-			SubTask subtask = gson.fromJson(requestBody, SubTask.class);
-			id = taskmanager.updateSubTask(subtask);
-			code = 200;
-			if (taskmanager.isValidateToAddTaskOrSubTaskToPrioritetSet(subtask)) {
-				if (id > 0) {
-					code = 200;
-					response = "Задача обновлена";
-				} else {
-					code = 200;
-					response = "Задача не прошла валидацию и не была обновлена";
-				}
+				id = taskmanager.updateSubTask(subtask);
+				code = id > 0 ? 200 : code;
+				response = id > 0 ? "Подзадача с id=" + id + " обновлена"
+						: "Подзадача с id=" + subtask.getId() + " не прошла валидацию при попытке обновления.";
 			}
 			break;
 
 		default:
 			response = "Неверный запрос " + endpoint;
-			code = 500;
+			code = 400;
 			break;
 		}
 
@@ -271,6 +221,7 @@ public class HttpTaskServer {
 			switch (endpoint) {
 			case GET_TASKS:
 				response = taskmanager.getTasksList().stream().map(Task::toString).collect(Collectors.joining(","));
+
 				break;
 
 			case GET_MAINTASKS:
@@ -285,14 +236,13 @@ public class HttpTaskServer {
 
 			default:
 				response = "Неверный запрос " + endpoint;
-				code = 500;
+				code = 400;
 				break;
 			}
 
-			if (response.isEmpty()) {
-				response = "Список задач пуст";
-				code = 404;
-			}
+			code = response.isEmpty() ? 404 : code;
+			response = response.isEmpty() ? "Список задач пуст" : response;
+
 			writeResponse(httpExchange, response, code);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -308,26 +258,20 @@ public class HttpTaskServer {
 			switch (endpoint) {
 			case GET_TASK_BY_ID:
 				Optional<Task> taskOpt = taskmanager.getTask(id);
-				if (taskOpt.isPresent()) {
-					response = taskOpt.get().toString();
-					code = 200;
-					break;
-				}
+				code = taskOpt.isPresent() ? 200 : code;
+				response = taskOpt.isPresent() ? taskOpt.get().toString() : response;
+				break;
 
 			case GET_MAINTASK_BY_ID:
 				Optional<MainTask> maintaskOpt = taskmanager.getMainTask(id);
-				if (maintaskOpt.isPresent()) {
-					response = maintaskOpt.get().toString();
-					code = 200;
-				}
+				code = maintaskOpt.isPresent() ? 200 : code;
+				response = maintaskOpt.isPresent() ? maintaskOpt.get().toString() : response;
 				break;
 
 			case GET_SUBTASK_BY_ID:
 				Optional<SubTask> subtaskOpt = taskmanager.getSubTask(id);
-				if (subtaskOpt.isPresent()) {
-					response = subtaskOpt.get().toString();
-					code = 200;
-				}
+				code = subtaskOpt.isPresent() ? 200 : code;
+				response = subtaskOpt.isPresent() ? subtaskOpt.get().toString() : response;
 				break;
 
 			default:
@@ -344,32 +288,32 @@ public class HttpTaskServer {
 
 	private void deleteTasksHandler(HttpExchange httpExchange, Endpoint endpoint) {
 		try {
-			int id = -1;
-			int code = 200;
-			String response = "Все задачи удалены";
+			int code = 500;
+			String response = "Ошибка удаления";
 
 			switch (endpoint) {
 			case DELETE_TASKS:
-				id = taskmanager.deleteAllTasks();
+				int deleteTaskskId = taskmanager.deleteAllTasks();
+				code = deleteTaskskId > 0 ? 200 : code;
+				response = deleteTaskskId > 0 ? "Все задачи удалены" : response;
 				break;
 
 			case DELETE_MAINTASKS:
-				id = taskmanager.deleteAllMainTasks();
+				int deleteMainTaskskId = taskmanager.deleteAllMainTasks();
+				code = deleteMainTaskskId > 0 ? 200 : code;
+				response = deleteMainTaskskId > 0 ? "Все главные задачи удалены" : response;
 				break;
 
 			case DELETE_SUBTASKS:
-				id = taskmanager.deleteAllSubTasks();
+				int deleteSubTaskskId = taskmanager.deleteAllSubTasks() > 0 ? 200 : code;
+				code = deleteSubTaskskId > 0 ? 200 : code;
+				response = deleteSubTaskskId > 0 ? "Все подзадачи удалены" : response;
 				break;
 
 			default:
+				code = 400;
 				response = "Неверный запрос " + endpoint;
-				code = 500;
 				break;
-			}
-
-			if (id == -1) {
-				code = 500;
-				response = "Ошибка удаления.";
 			}
 			writeResponse(httpExchange, response, code);
 		} catch (Exception e) {
@@ -380,33 +324,34 @@ public class HttpTaskServer {
 	private void deleteTaskByIdHandler(HttpExchange httpExchange, Endpoint endpoint) {
 		try {
 			int id = getIdfromPath(httpExchange);
-			int taskId = -1;
-			String response = "Задача с id= " + id + " удалена";
-			int code = 200;
+			int code = 500;
+			String response = "Ошибка удаления";
 
 			switch (endpoint) {
-
 			case DELETE_TASK_BY_ID:
-				taskId = taskmanager.deleteTaskById(id);
+				int taskId = taskmanager.deleteTaskById(id);
+				code = taskId > 0 ? 200 : code;
+				response = taskId > 0 ? "Задача с id=" + taskId + " удалена" : response;
 				break;
 
 			case DELETE_MAINTASK_BY_ID:
-				taskId = taskmanager.deleteMainTaskById(id);
+				int maintaskId = taskmanager.deleteMainTaskById(id);
+				code = maintaskId > 0 ? 200 : code;
+				response = maintaskId > 0 ? "Главна задача с id=" + maintaskId + " удалена" : response;
 				break;
 
 			case DELETE_SUBTASK_BY_ID:
-				taskId = taskmanager.deleteSubTaskById(id);
+				int subtaskId = taskmanager.deleteSubTaskById(id);
+				code = subtaskId > 0 ? 200 : code;
+				response = subtaskId > 0 ? "Подзадача с id=" + subtaskId + " удалена" : response;
 				break;
 
 			default:
-				response = "Неверный запрос " + endpoint;
 				code = 400;
+				response = "Неверный запрос " + endpoint;
 				break;
 			}
 
-			if (taskId == -1) {
-				response = "Ошибка удаления. Задача с id=" + id + " не найдена";
-			}
 			writeResponse(httpExchange, response, code);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -420,10 +365,9 @@ public class HttpTaskServer {
 			String response = taskmanager.getSubTaskListByMainTask(id).stream().map(SubTask::toString)
 					.collect(Collectors.joining(","));
 
-			if (response.isEmpty()) {
-				response = "Список подзадач пуст";
-				code = 404;
-			}
+			code = response.isEmpty() ? 404 : code;
+			response = response.isEmpty() ? "Список подзадач главной задачи с id=" + id + " пуст" : response;
+
 			writeResponse(httpExchange, response, code);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -436,10 +380,9 @@ public class HttpTaskServer {
 			String response = taskmanager.getHistory().stream().map(task -> task.toString())
 					.collect(Collectors.joining(","));
 
-			if (response.isEmpty()) {
-				response = "Список пуст";
-				code = 404;
-			}
+			code = response.isEmpty() ? 404 : code;
+			response = response.isEmpty() ? "Список истории вызова задач пуст" : response;
+
 			writeResponse(httpExchange, response, code);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -453,10 +396,9 @@ public class HttpTaskServer {
 			String response = taskmanager.getPrioritizedTasks().stream().map(task -> task.toString())
 					.collect(Collectors.joining(","));
 
-			if (response.isEmpty()) {
-				response = "Список пуст";
-				code = 404;
-			}
+			code = response.isEmpty() ? 404 : code;
+			response = response.isEmpty() ? "Список задач с приоритетом пуст" : response;
+
 			writeResponse(httpExchange, response, code);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -551,18 +493,6 @@ public class HttpTaskServer {
 			}
 			if (Pattern.matches("^/subtasks", requestPath)) {
 				return Endpoint.POST_SUBTASK;
-			}
-			return Endpoint.UNDEFINED_PATH;
-
-		case "PUT":
-			if (Pattern.matches("^/tasks", requestPath)) {
-				return Endpoint.PUT_TASK;
-			}
-			if (Pattern.matches("^/maintasks", requestPath)) {
-				return Endpoint.PUT_MAINTASK;
-			}
-			if (Pattern.matches("^/subtasks", requestPath)) {
-				return Endpoint.PUT_SUBTASK;
 			}
 			return Endpoint.UNDEFINED_PATH;
 
